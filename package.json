@@ -1,0 +1,42 @@
+{
+  "name": "@realmjs/react-navi",
+  "version": "1.0.0",
+  "description": "Navigator for react client",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "webpack-dev-server --config webpack.dev.config.js  --port 3000",
+    "clean": "rm -rf dist/",
+    "build": "babel src --out-dir dist --source-maps",
+    "prepare": "npm run clean & npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/realmjs/react-navi.git"
+  },
+  "keywords": [
+    "React",
+    "Navigator",
+    "Router"
+  ],
+  "author": "duongtdn",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/realmjs/react-navi/issues"
+  },
+  "homepage": "https://github.com/realmjs/react-navi#readme",
+  "dependencies": {
+    "react": "^16.13.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
+    "@babel/preset-react": "^7.9.4",
+    "babel-loader": "^8.1.0",
+    "react-dom": "^16.13.1",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3"
+  }
+}
