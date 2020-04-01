@@ -23,10 +23,10 @@ export default {
     }
     return this.__popup(popup, options, cb);
   },
-  navigate(root) {
+  navigate(route, options) {
     if (this.__route === null) {
       return Promise.reject('Navigator is not mounted or has been destroyed');
     }
-    return this.__route.navigate(root);
+    return this.__route.navigate(route, options);
   }
 };

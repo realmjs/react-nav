@@ -3,7 +3,10 @@
 import React, { Component } from 'react'
 
 import nav from './nav'
+import Href from './href'
 import { capitalize } from './util'
+
+const href = new Href();
 
 class Page extends Component {
   constructor(props) {
@@ -55,8 +58,8 @@ class Navigator extends Component {
     super(props);
 
     this.state = {
-      routeStack : props.initialRouteStack || [props.initialRoute] || [],
-      activeRoute: props.initialRoute || null,
+      routeStack : this.__initRouteStack(),
+      activeRoute: this.__findRouteNameFromURL() || props.initialRoute || null,
       showPopup: {},
     };
 
@@ -154,6 +157,35 @@ class Navigator extends Component {
     );
   }
 
+  __findRouteNameFromURL() {
+    const __path = href.getPathName();
+    const __bookmark = href.getBookmark();
+    for (let name in this.props.routes) {
+      const route = this.props.routes[name];
+      if (route.href) {
+        // 3 cases to check:
+        //   - if href contain path without bookmark
+        //   - if href contain bookmark without path
+        //   - if hred contain both
+        if (  (route.href.replace(/\//g,'').toLowerCase() === __path.toLowerCase() && __bookmark.length === 0) ||
+              (route.href.replace(/\//g,'').toLowerCase() === `#${__bookmark.toLowerCase()}` && __path.length === 0) ||
+              (route.href.replace(/\//g,'').toLowerCase() === `${__path.toLowerCase()}#${__bookmark.toLowerCase()}`) ) {
+          return name;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  __initRouteStack() {
+    const initRoute = this.__findRouteNameFromURL() || this.props.initialRoute || undefined;
+    if (this.props.initialRouteStack) {
+      return [...this.props.initialRouteStack, initRoute].filter(e => e !== undefined);
+    } else {
+      return [initRoute].filter(e => e !== undefined);
+    }
+  }
+
   __createInjectPage(name) {
     const page = {
       on: (event, handler) => {
@@ -175,7 +207,7 @@ class Navigator extends Component {
     }
   }
 
-  navigate(name) {
+  navigate(name, options) {
     return new Promise( (resolve, reject) => {
       if (name === this.state.activeRoute) {
         resolve();
@@ -193,6 +225,15 @@ class Navigator extends Component {
       this.__fire(this.state.activeRoute, 'leave');
       this.__fire(activeRoute, 'beforeEnter');
       this.setState({ routeStack, activeRoute });
+      if ( (options && options.noUpdateUrl) || !this.__registeredRoutes[name].href) {
+        resolve();
+        return
+      }
+      if (options && options.reload) {
+        href.set(this.__registeredRoutes[name].href);
+      } else {
+        href.push(this.__registeredRoutes[name].href);
+      }
       resolve();
     });
   }
