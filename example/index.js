@@ -46,9 +46,10 @@ class Popup_YesNo extends Component {
 
 class Popup_Loading extends Component {
   render() {
+    const color = this.props.self.color || 'white';
     return (
       <div className="w3-round w3-container" style={{ margin: 'auto', width: '300px', textAlign: 'center' }}>
-        <p> <i className="fas fa-spinner w3-spin w3-xxxlarge w3-text-white" /> </p>
+        <p> <i className={`fas fa-spinner w3-spin w3-xxxlarge w3-text-${color}`} /> </p>
       </div>
     )
   }
@@ -69,7 +70,7 @@ class Popup_Overlay extends Component {
     )
   }
   load() {
-    this.props.page.popup(Popup_Loading, {overlay: true}, self => setTimeout(() =>self.resolve('# --- Popup Loading resolve by Timeout 3s'), 3000))
+    this.props.page.popup(Popup_Loading, {overlay: true, color: 'red'}, self => setTimeout(() =>self.resolve('# --- Popup Loading resolve by Timeout 3s'), 3000))
     .then( m => console.log(m) )
     .catch( e => console.log(e) );
   }

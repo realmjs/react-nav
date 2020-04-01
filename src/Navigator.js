@@ -96,10 +96,7 @@ class Navigator extends Component {
                   { React.createElement(route.Page, { route: this.route, page, ...this.props }) }
                 </Page>
                 {/* Popup */}
-                <Popup  show = {this.state.showPopup[name]}
-                        options = {this.__popupStack[name] && this.__popupStack[name].options}
-                        popup = {page.popup}
-                >
+                <Popup  show = {this.state.showPopup[name]} >
                   {
                     this.__popupStack[name] && this.__popupStack[name].map( (popup, index) => {
                       if (popup.self.overlay) {
