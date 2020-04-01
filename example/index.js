@@ -4,6 +4,7 @@ import React, { Component } from 'react'
 import { render } from 'react-dom'
 
 import Navigator from '../src/Navigator'
+import nav from '../src/nav'
 
 class Popup_Info extends Component {
   render() {
@@ -80,6 +81,14 @@ class Popup_Overlay extends Component {
 }
 
 class Page_Home extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { count: 5 };
+    props.page.onLoad(e => console.log('# Load Page Home'));
+    props.page.onBeforeEnter(e => console.log('# Before Enter Page Home'));
+    props.page.onEnter(e => { console.log('# Enter Page Home'); this.setState({ count: 5 }) });
+    props.page.onLeave(e => console.log('# Leave Page Home'));
+  }
   render() {
     return (
       <div className = "w3-container">
@@ -95,11 +104,20 @@ class Page_Home extends Component {
         </div>
         <hr />
         <p>
-          {/* <button className = "w3-button w3-green" onClick = {e => this.props.route.navigate('welcome')}> Move to page Welcome </button> */}
-          <button className = "w3-button w3-green" onClick = {e => setTimeout(_ => this.props.route.navigate('welcome'),5000)}> Move to page Welcome </button>
+          <button className = "w3-button w3-green" onClick = {e => this.navigate()}> Move to page Welcome (after {this.state.count}s) </button>
         </p>
       </div>
     );
+  }
+  navigate() {
+    const t = setInterval( _ => {
+      if (this.state.count === 0) {
+        clearInterval(t);
+        this.props.route && this.props.route.navigate('welcome');
+        return;
+      }
+      this.setState({ count: this.state.count - 1 });
+    }, 1000);
   }
   popupInfo() {
     this.props.page.popup(Popup_Info)
@@ -143,6 +161,13 @@ class Page_Home extends Component {
 }
 
 class Page_Welcome extends Component {
+  constructor(props) {
+    super(props);
+    props.page.onLoad(e => console.log('# Load Page Welcome'));
+    props.page.onBeforeEnter(e => console.log('# Before Enter Page Welcome'));
+    props.page.onEnter(e => console.log('# Enter Page Welcome'));
+    props.page.onLeave(e => console.log('# Leave Page Welcome'));
+  }
   render() {
     return (
       <div className = "w3-container">
@@ -165,22 +190,51 @@ const routes = {
 class Demo extends Component {
   constructor(props) {
     super(props);
-    this.route = null
+    this.state = { ui: 1 };
+    this.route = null;
   }
   render() {
     return (
       <div className="w3-container">
         <div className = "w3-bar w3-border-bottom w3-padding">
-          <button className = "w3-bar-item w3-button w3-text-blue" onClick = {e => this.route.navigate('home')}> Home </button>
+          <button className = "w3-bar-item w3-button w3-text-blue" onClick = {e => this.navToHome()}> Home </button>
           <button className = "w3-bar-item w3-button w3-text-green" onClick = {e => this.route.navigate('welcome')}> Welcome </button>
+          <button className = "w3-bar-item w3-button w3-text-grey" onClick = {e => this.popupLoading()}> Global Popup Loading </button>
+          <button className = "w3-bar-item w3-button w3-text-grey" onClick = {e => this.popupOverlay()}> Global Popup Overlay </button>
+          <span className = "w3-right">
+            <button className = "w3-bar-item w3-button w3-text-blue" onClick = {e => this.setState({ ui: 1 })}> Mount Nav </button>
+            <button className = "w3-bar-item w3-button w3-text-red" onClick = {e => this.setState({ ui: 2 })}> Unmount Nav </button>
+          </span>
+
         </div>
-        <Navigator  routes = {routes}
-                    initialRoute = 'home'
-                    routeHandler = { routeHandler => this.route = routeHandler }
-                    {...this.props}
-        />
+        {
+          this.state.ui === 1 ?
+            <Navigator  routes = {routes}
+                        initialRoute = 'home'
+                        routeHandler = { routeHandler => this.route = routeHandler }
+                        {...this.props}
+            />
+            :
+            <p> Unmounted Navigator </p>
+        }
+
       </div>
     )
+  }
+  navToHome() {
+    nav.navigate('home')
+    .then( () => console.log('# Nav to Home resolved'))
+    .catch(e => console.log(e));
+  }
+  popupLoading() {
+    nav.popup(Popup_Loading, self => setTimeout(() => self.resolve('# --- Popup Loading resolve by Timeout 5s'), 5000))
+    .then(m => console.log(m))
+    .catch(e => console.log(e));
+  }
+  popupOverlay() {
+    nav.popup(Popup_Overlay)
+    .then(m => console.log(m))
+    .catch(e => console.log(e));
   }
 }
 

@@ -2,6 +2,7 @@
 
 import React, { Component } from 'react'
 
+import nav from './nav'
 import { capitalize } from './util'
 
 class Page extends Component {
@@ -75,10 +76,20 @@ class Navigator extends Component {
 
     this.__popupStack = {};
 
+    nav.register(this);
+
+    this.__global = { popup: (popup, options, cb) => this.__createPopup('__global', popup, options, cb) };
+
     this.__createInjectPage = this.__createInjectPage.bind(this);
     this.__fire = this.__fire.bind(this);
     this.__createPopup = this.__createPopup.bind(this);
 
+  }
+
+  componentWillUnmount() {
+    // clean up to avoid memory leak
+    nav.destroy();
+    this.props.routeHandler && this.props.routeHandler(null);
   }
 
   render() {
@@ -119,6 +130,26 @@ class Navigator extends Component {
             )
           })
         }
+        {/* Global Popup */}
+        <Popup  show = {this.state.showPopup.__global} >
+          {
+            this.__popupStack.__global && this.__popupStack.__global.map( (popup, index) => {
+              if (popup.self.overlay) {
+                return (
+                  <div key={index} className="w3-modal" style={{display: 'block'}}>
+                      { React.createElement(popup.Popup, { self: popup.self, ...this.props, page: this.__global }) }
+                  </div>
+                )
+              } else {
+                return (
+                  <div key={index} className="w3-model-content">
+                    { React.createElement(popup.Popup, { self: popup.self, ...this.props, page: this.__global }) }
+                  </div>
+                )
+              }
+            })
+          }
+        </Popup>
       </div>
     );
   }
@@ -145,19 +176,25 @@ class Navigator extends Component {
   }
 
   navigate(name) {
-    if (name === this.state.activeRoute) { return; }
-    if (!this.__registeredRoutes[name]) {
-      console.error(`Route ${name} is not registered!`);
-      return;
-    }
-    const activeRoute = name;
-    const routeStack = [...this.state.routeStack];
-    if (routeStack.indexOf(name) === -1) {
-      routeStack.push(name);
-    }
-    this.__fire(this.state.activeRoute, 'leave');
-    this.__fire(activeRoute, 'beforeEnter');
-    this.setState({ routeStack, activeRoute })
+    return new Promise( (resolve, reject) => {
+      if (name === this.state.activeRoute) {
+        resolve();
+        return
+      }
+      if (!this.__registeredRoutes[name]) {
+        reject(`Route ${name} is not registered!`);
+        return;
+      }
+      const activeRoute = name;
+      const routeStack = [...this.state.routeStack];
+      if (routeStack.indexOf(name) === -1) {
+        routeStack.push(name);
+      }
+      this.__fire(this.state.activeRoute, 'leave');
+      this.__fire(activeRoute, 'beforeEnter');
+      this.setState({ routeStack, activeRoute });
+      resolve();
+    });
   }
 
   __createPopup(name, popup, options, cb) {
@@ -178,7 +215,7 @@ class Navigator extends Component {
       showPopup[name] = true;
       this.setState({ showPopup });
       cb && cb({ resolve: self.resolve, reject: self.reject });
-    })
+    });
   }
 
   __popupResolve(name, data, self) {
