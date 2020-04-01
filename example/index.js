@@ -94,7 +94,8 @@ class Page_Home extends Component {
         </div>
         <hr />
         <p>
-          <button className = "w3-button w3-green" onClick = {e => this.props.route.navigate('welcome')}> Move to page Welcome </button>
+          {/* <button className = "w3-button w3-green" onClick = {e => this.props.route.navigate('welcome')}> Move to page Welcome </button> */}
+          <button className = "w3-button w3-green" onClick = {e => setTimeout(_ => this.props.route.navigate('welcome'),5000)}> Move to page Welcome </button>
         </p>
       </div>
     );

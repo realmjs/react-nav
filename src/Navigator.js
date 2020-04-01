@@ -56,7 +56,7 @@ class Navigator extends Component {
     this.state = {
       routeStack : props.initialRouteStack || [props.initialRoute] || [],
       activeRoute: props.initialRoute || null,
-      showPopup: false,
+      showPopup: {},
     };
 
     this.route = {
@@ -96,7 +96,7 @@ class Navigator extends Component {
                   { React.createElement(route.Page, { route: this.route, page, ...this.props }) }
                 </Page>
                 {/* Popup */}
-                <Popup  show = {this.state.showPopup}
+                <Popup  show = {this.state.showPopup[name]}
                         options = {this.__popupStack[name] && this.__popupStack[name].options}
                         popup = {page.popup}
                 >
@@ -177,7 +177,9 @@ class Navigator extends Component {
         this.__popupStack[name] = [];
       }
       this.__popupStack[name].push({ Popup: popup, self, resolve, reject });
-      this.setState({ showPopup: true });
+      const showPopup = {...this.state.showPopup};
+      showPopup[name] = true;
+      this.setState({ showPopup });
       cb && cb({ resolve: self.resolve, reject: self.reject });
     })
   }
@@ -187,7 +189,9 @@ class Navigator extends Component {
       const index =  this.__popupStack[name].findIndex( p => p.self === self);
       if (index === -1) { return; }
       const { resolve } = this.__popupStack[name].splice(index, 1)[0];
-      this.__popupStack[name].length == 0 ? this.setState({ showPopup: false }): this.setState({ showPopup: true });
+      const showPopup = {...this.state.showPopup};
+      showPopup[name] = this.__popupStack[name].length == 0 ? false : true;
+      this.setState({ showPopup });
       resolve && resolve(data);
     }
   }
@@ -197,7 +201,9 @@ class Navigator extends Component {
       const index =  this.__popupStack[name].findIndex( p => p.self === self);
       if (index === -1) { return; }
       const { reject } = this.__popupStack[name].splice(index, 1)[0];
-      this.__popupStack[name].length == 0 ? this.setState({ showPopup: false }): this.setState({ showPopup: true });
+      const showPopup = {...this.state.showPopup};
+      showPopup[name] = this.__popupStack[name].length == 0 ? false : true;
+      this.setState({ showPopup });
       reject && reject(error);
     }
   }
