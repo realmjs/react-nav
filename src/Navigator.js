@@ -41,6 +41,28 @@ class Popup extends Component {
   }
 }
 
+class Toast extends Component {
+  render() {
+    const style = {
+      display: this.props.show? 'block' : 'none',
+      position: 'fixed',
+      width: '100%',
+      left: 0,
+      opacity: this.props.opacity || 0.9
+    }
+    if (this.props.bottom) {
+      style.bottom = 0;
+    } else {
+      style.top = 0;
+    }
+    return (
+      <div style = { style }>
+        { this.props.children }
+      </div>
+    )
+  }
+}
+
 /**
  * Navigator component
  * @extends Component
@@ -61,6 +83,7 @@ class Navigator extends Component {
       routeStack : this.__initRouteStack(),
       activeRoute: this.__findRouteNameFromURL() || props.initialRoute || null,
       showPopup: {},
+      toasts: { top: [], bottom: [] },
     };
 
     this.route = {
@@ -153,6 +176,21 @@ class Navigator extends Component {
             })
           }
         </Popup>
+        {/* Toasts */}
+        <Toast show = {this.state.toasts.top.length > 0} top = {true} >
+          {
+            this.state.toasts.top.map((toast, index) => {
+              return React.createElement(toast.Toast, { key: index, self: toast.self })
+            })
+          }
+        </Toast>
+        <Toast show = {this.state.toasts.bottom.length > 0} bottom = {true} >
+          {
+            this.state.toasts.bottom.map((toast, index) => {
+              return React.createElement(toast.Toast, { key: index, self: toast.self })
+            })
+          }
+        </Toast>
       </div>
     );
   }
@@ -281,6 +319,37 @@ class Navigator extends Component {
       this.setState({ showPopup });
       reject && reject(error);
     }
+  }
+
+  __createToast(toast, options, cb) {
+    let self = {};
+    if (Object.prototype.toString.call(options) == '[object Function]') {
+      cb = options;
+    } else {
+      self = { ...options };
+    }
+    self.close = () => this.__closeToast(self, options && options.bottom? 'bottom' : 'top')
+    const top = [...this.state.toasts.top];
+    const bottom = [...this.state.toasts.bottom];
+    if (options && options.bottom) {
+      bottom.unshift({Toast: toast, self });
+    } else {
+      top.unshift({Toast: toast, self });
+    }
+    const toasts = { top, bottom };
+    this.setState({ toasts });
+    cb && cb(self);
+  }
+
+  __closeToast(self, position) {
+    const toasts = {
+      top: [...this.state.toasts.top],
+      bottom: [...this.state.toasts.bottom],
+    };
+    const index =  toasts[position].findIndex( p => p.self === self);
+    if (index === -1) { return; }
+    toasts[position].splice(index, 1);
+    this.setState({ toasts });
   }
 
 }

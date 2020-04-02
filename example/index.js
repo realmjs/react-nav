@@ -80,6 +80,51 @@ class Popup_Overlay extends Component {
   }
 }
 
+class Toast_Success extends Component {
+  render() {
+    return (
+      <div className = "w3-container w3-green">
+        <p className="w3-small"> Operation success!
+          <span className="cursor-pointer w3-right" onClick={e => this.props.self.close()}> &times; </span>
+        </p>
+      </div>
+    )
+  }
+}
+class Toast_Failure extends Component {
+  render() {
+    return (
+      <div className = "w3-container w3-red">
+        <p className="w3-small"> Operation failed!
+          <span className="cursor-pointer w3-right" onClick={e => this.props.self.close()}> &times; </span>
+        </p>
+      </div>
+    )
+  }
+}
+class Toast_Info extends Component {
+  render() {
+    return (
+      <div className = "w3-container w3-blue">
+        <p className="w3-small"> Annoucement!
+          <span className="cursor-pointer w3-right" onClick={e => this.props.self.close()}> &times; </span>
+        </p>
+      </div>
+    )
+  }
+}
+class Toast_System extends Component {
+  render() {
+    return (
+      <div className = "w3-container w3-black">
+        <p className="w3-small"> System message!
+          <span className="cursor-pointer w3-right" onClick={e => this.props.self.close()}> &times; </span>
+        </p>
+      </div>
+    )
+  }
+}
+
 class Page_Home extends Component {
   constructor(props) {
     super(props);
@@ -101,6 +146,13 @@ class Page_Home extends Component {
           <button className = "w3-cell w3-mobile w3-button w3-blue" style={{margin: '3px'}} onClick = {e => this.popupLoading()}> Popup Loading </button>
           <button className = "w3-cell w3-mobile w3-button w3-blue" style={{margin: '3px'}} onClick = {e => this.popupMany()}> Popup Many </button>
           <button className = "w3-cell w3-mobile w3-button w3-blue" style={{margin: '3px'}} onClick = {e => this.popupOverlay()}> Popup Overlay </button>
+        </div>
+        <hr />
+        <div className="w3-cell-row">
+          <button className = "w3-cell w3-mobile w3-button w3-green" style={{margin: '3px'}} onClick = {e => nav.toast(Toast_Success)} >Toast Success </button>
+          <button className = "w3-cell w3-mobile w3-button w3-red" style={{margin: '3px'}} onClick = {e => nav.toast(Toast_Failure)} >Toast Failure </button>
+          <button className = "w3-cell w3-mobile w3-button w3-blue" style={{margin: '3px'}} onClick = {e => nav.toast(Toast_Info, {bottom: true})} >Toast Info </button>
+          <button className = "w3-cell w3-mobile w3-button w3-black" style={{margin: '3px'}} onClick = {e => nav.toast(Toast_System, {bottom: true}, self => setTimeout(() => self.close(),2000))} >Toast System </button>
         </div>
         <hr />
         <p>
