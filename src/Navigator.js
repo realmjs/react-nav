@@ -5,6 +5,7 @@ import React, { Component } from 'react'
 import nav from './nav'
 import Href from './href'
 import { capitalize } from './util'
+import animation from './animation'
 
 const href = new Href();
 
@@ -55,9 +56,12 @@ class Toast extends Component {
     } else {
       style.top = 0;
     }
+    const anim = this.props.bottom ? animation('slide-bottom', '0.4s') : animation('slide-top', '0.4s')
     return (
-      <div style = { style }>
+      <div style = {{ ...style, ...anim}}>
+        <div style = {{position: 'relative'}}>
         { this.props.children }
+        </div>
       </div>
     )
   }
@@ -180,14 +184,24 @@ class Navigator extends Component {
         <Toast show = {this.state.toasts.top.length > 0} top = {true} >
           {
             this.state.toasts.top.map((toast, index) => {
-              return React.createElement(toast.Toast, { key: index, self: toast.self })
+              const style = toast.animateClosing ? animation('fade-out', toast.animateClosing) : {};
+              return (
+                <div key = {index} style = {style}>
+                  { React.createElement(toast.Toast, { self: toast.self }) }
+                </div>
+              )
             })
           }
         </Toast>
         <Toast show = {this.state.toasts.bottom.length > 0} bottom = {true} >
           {
             this.state.toasts.bottom.map((toast, index) => {
-              return React.createElement(toast.Toast, { key: index, self: toast.self })
+              const style = toast.animateClosing ? animation('fade-out', toast.animateClosing) : {};
+              return (
+                <div key = {index} className="w3-card-4" style = {style}>
+                  { React.createElement(toast.Toast, { self: toast.self }) }
+                </div>
+              )
             })
           }
         </Toast>
@@ -328,7 +342,7 @@ class Navigator extends Component {
     } else {
       self = { ...options };
     }
-    self.close = () => this.__closeToast(self, options && options.bottom? 'bottom' : 'top')
+    self.close = () => this.__animateCloseToast(self, options && options.bottom? 'bottom' : 'top')
     const top = [...this.state.toasts.top];
     const bottom = [...this.state.toasts.bottom];
     if (options && options.bottom) {
@@ -341,14 +355,43 @@ class Navigator extends Component {
     cb && cb(self);
   }
 
+  __animateCloseToast(self, position) {
+    if (position.toLowerCase() !== 'top' && position.toLowerCase() !== 'bottom') {
+      throw new Error('Invalid toast position, it must be either top or bottom');
+    }
+    if ( this.state.toasts[position.toLowerCase()].length > 1) {  // animation only if there is 1 toast left
+      this.__closeToast(self, position);
+      return
+    }
+    const toasts = {
+      top: [...this.state.toasts.top],
+      bottom: [...this.state.toasts.bottom],
+    };
+    toasts[position.toLowerCase()] = this.state.toasts[position.toLowerCase()].map(toast => {
+      if (toast.self === self) {
+        return {
+          Toast: toast.Toast,
+          self,
+          animateClosing: '0.4s',
+        };
+      } else {
+        return toast;
+      }
+    });
+    this.setState({ toasts });
+    setTimeout(() => {
+      this.__closeToast(self, position);
+    }, 400);
+  }
+
   __closeToast(self, position) {
     const toasts = {
       top: [...this.state.toasts.top],
       bottom: [...this.state.toasts.bottom],
     };
-    const index =  toasts[position].findIndex( p => p.self === self);
+    const index =  toasts[position.toLowerCase()].findIndex(p => p.self === self);
     if (index === -1) { return; }
-    toasts[position].splice(index, 1);
+    toasts[position.toLowerCase()].splice(index, 1);
     this.setState({ toasts });
   }
 
