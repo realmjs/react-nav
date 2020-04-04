@@ -6,6 +6,7 @@
 1. page event: load, enter, leave...
 1. page injector
 1. global popup
+1. Navigator Props: noUrl
 
 ## Tests for memory leak
 1. click button 'Unmount Nav', then click button 'Global Popup'  -> fixed

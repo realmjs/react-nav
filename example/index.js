@@ -234,9 +234,21 @@ class Page_Welcome extends Component {
   }
 }
 
+class Page_Error extends Component {
+  render() {
+    return (
+      <div className = "w3-container">
+        <h2 className = " w3-text-red"> Error </h2>
+        <p className = "w3-text-grey"> Error description </p>
+      </div>
+    );
+  }
+}
+
 const routes = {
-  home: { Page: Page_Home, href: '/'},
-  welcome: { Page: Page_Welcome, href: '/welcome'}
+  home: { Page: Page_Home, url: '/' },
+  welcome: { Page: Page_Welcome, url: '/welcome' },
+  error: { Page: Page_Error, url: '/error' },
 };
 
 class Demo extends Component {
@@ -263,8 +275,10 @@ class Demo extends Component {
           this.state.ui === 1 ?
             <Navigator  routes = {routes}
                         initialRoute = 'home'
+                        fallbackRoute = 'error'
                         routeHandler = { routeHandler => this.route = routeHandler }
                         {...this.props}
+                        noUrl = {false}
             />
             :
             <p> Unmounted Navigator </p>

@@ -83,9 +83,12 @@ class Navigator extends Component {
   constructor(props) {
     super(props);
 
+    this.__validateProps(props);
+    this.__validateRoutes(props.routes);
+
     this.state = {
       routeStack : this.__initRouteStack(),
-      activeRoute: this.__findRouteNameFromURL() || props.initialRoute || null,
+      activeRoute: this.__findInitialRoute(),
       showPopup: {},
       toasts: { top: [], bottom: [] },
     };
@@ -99,16 +102,18 @@ class Navigator extends Component {
 
     this.__supportedPageEvents = ['load', 'beforeEnter', 'enter', 'leave'];
     this.__events = {};
-    for (let name in this.__registeredRoutes) {
-      this.__events[name] = {};
-      this.__supportedPageEvents.forEach( e => this.__events[name][e] = [] );
-    }
+    this.__bindPageEvent(this.__registeredRoutes);
 
     this.__popupStack = {};
 
     nav.register(this);
 
     this.__global = { popup: (popup, options, cb) => this.__createPopup('__global', popup, options, cb) };
+
+    // update url if fallback route is use
+    if (props.fallbackRoute && this.state.activeRoute === props.fallbackRoute) {
+      href.push(this.__registeredRoutes[this.state.activeRoute].url);
+    }
 
     this.__createInjectPage = this.__createInjectPage.bind(this);
     this.__fire = this.__fire.bind(this);
@@ -209,28 +214,53 @@ class Navigator extends Component {
     );
   }
 
+  __validateProps(props) {
+    if (this.props.noUrl && !this.props.initialRoute) {
+      throw new Error(`Error: Validate props failed: 'initialRoute' is required when 'noUrl' set to true`);
+    }
+    if (!this.props.routes[this.props.initialRoute]) {
+      throw new Error(`Error: Validate props failed: 'initialRoute' is not listed in 'routes'`);
+    }
+    if (!this.props.noUrl && !this.props.fallbackRoute) {
+      console.warn("Warning: Validate props: Missing 'fallbackRoute'!")
+    }
+  }
+
+  __validateRoutes(routes) {
+    for (let name in routes) {
+      const route = routes[name];
+      if (!route.Page) {
+        throw new Error(`Invalid route object: missing 'Page' in route '${name}'`);
+      }
+      if (!this.props.noUrl && !route.url) {
+        throw new Error(`Invalid route object: missing 'url' in route '${name}'`);
+      }
+    }
+  }
+
+  __findInitialRoute() {
+    if (this.props.noUrl) {
+        return this.props.initialRoute;
+    }
+    return this.__findRouteNameFromURL() || this.props.fallbackRoute;
+  }
+
   __findRouteNameFromURL() {
+    if (this.props.noUrl) {
+      return undefined;
+    }
     const __path = href.getPathName();
-    const __bookmark = href.getBookmark();
     for (let name in this.props.routes) {
       const route = this.props.routes[name];
-      if (route.href) {
-        // 3 cases to check:
-        //   - if href contain path without bookmark
-        //   - if href contain bookmark without path
-        //   - if hred contain both
-        if (  (route.href.replace(/\//g,'').toLowerCase() === __path.toLowerCase() && __bookmark.length === 0) ||
-              (route.href.replace(/\//g,'').toLowerCase() === `#${__bookmark.toLowerCase()}` && __path.length === 0) ||
-              (route.href.replace(/\//g,'').toLowerCase() === `${__path.toLowerCase()}#${__bookmark.toLowerCase()}`) ) {
-          return name;
-        }
+      if (route.url && route.url.replace(/\//g,'').toLowerCase() === __path.toLowerCase()) {
+        return name;
       }
     }
     return undefined;
   }
 
   __initRouteStack() {
-    const initRoute = this.__findRouteNameFromURL() || this.props.initialRoute || undefined;
+    const initRoute = this.__findInitialRoute();
     if (this.props.initialRouteStack) {
       return [...this.props.initialRouteStack, initRoute].filter(e => e !== undefined);
     } else {
@@ -249,6 +279,13 @@ class Navigator extends Component {
     }
     this.__supportedPageEvents.forEach( e => page[`on${capitalize(e)}`] = handler => page.on(e, handler) );
     return page;
+  }
+
+  __bindPageEvent(routes) {
+    for (let name in routes) {
+      this.__events[name] = {};
+      this.__supportedPageEvents.forEach( e => this.__events[name][e] = [] );
+    }
   }
 
   __fire(route, event) {
@@ -277,14 +314,14 @@ class Navigator extends Component {
       this.__fire(this.state.activeRoute, 'leave');
       this.__fire(activeRoute, 'beforeEnter');
       this.setState({ routeStack, activeRoute });
-      if ( (options && options.noUpdateUrl) || !this.__registeredRoutes[name].href) {
+      if ( this.props.noUrl || (options && options.noUpdateUrl) || !this.__registeredRoutes[name].url) {
         resolve();
         return
       }
       if (options && options.reload) {
-        href.set(this.__registeredRoutes[name].href);
+        href.set(this.__registeredRoutes[name].url);
       } else {
-        href.push(this.__registeredRoutes[name].href);
+        href.push(this.__registeredRoutes[name].url);
       }
       resolve();
     });
