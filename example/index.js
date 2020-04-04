@@ -228,6 +228,8 @@ class Page_Welcome extends Component {
         <hr />
         <p>
           <button className = "w3-button w3-blue" onClick = {e => this.props.route.navigate('home')}> Move to page Home </button>
+          {' '}
+          <button className = "w3-button w3-blue" onClick = {e => this.props.route.navigate('landing')}> Move to page Landing </button>
         </p>
       </div>
     );
@@ -247,6 +249,7 @@ class Page_Error extends Component {
 
 const routes = {
   home: { Page: Page_Home, url: '/' },
+  landing: {url: '/landing', redirect: 'home'},
   welcome: { Page: Page_Welcome, url: '/welcome' },
   error: { Page: Page_Error, url: '/error' },
 };

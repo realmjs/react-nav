@@ -110,9 +110,11 @@ class Navigator extends Component {
 
     this.__global = { popup: (popup, options, cb) => this.__createPopup('__global', popup, options, cb) };
 
-    // update url if fallback route is use
-    if (props.fallbackRoute && this.state.activeRoute === props.fallbackRoute) {
-      href.push(this.__registeredRoutes[this.state.activeRoute].url);
+    // update url missmatch between route and url
+    const __path = href.getPathName();
+    const route = this.__registeredRoutes[this.state.activeRoute];
+    if (route && route.url.replace(/\//g,'').toLowerCase() !== __path.toLowerCase()) {
+      href.push(route.url);
     }
 
     this.__createInjectPage = this.__createInjectPage.bind(this);
@@ -229,7 +231,7 @@ class Navigator extends Component {
   __validateRoutes(routes) {
     for (let name in routes) {
       const route = routes[name];
-      if (!route.Page) {
+      if (!route.redirect && !route.Page) {
         throw new Error(`Invalid route object: missing 'Page' in route '${name}'`);
       }
       if (!this.props.noUrl && !route.url) {
@@ -253,7 +255,7 @@ class Navigator extends Component {
     for (let name in this.props.routes) {
       const route = this.props.routes[name];
       if (route.url && route.url.replace(/\//g,'').toLowerCase() === __path.toLowerCase()) {
-        return name;
+        return route.redirect || name;
       }
     }
     return undefined;
@@ -305,6 +307,9 @@ class Navigator extends Component {
       if (!this.__registeredRoutes[name]) {
         reject(`Route ${name} is not registered!`);
         return;
+      }
+      if(this.__registeredRoutes[name].redirect) {
+        name = this.__registeredRoutes[name].redirect;
       }
       const activeRoute = name;
       const routeStack = [...this.state.routeStack];
