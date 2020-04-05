@@ -6,6 +6,7 @@ import nav from './nav'
 import Href from './href'
 import { capitalize } from './util'
 import animation from './animation'
+import { appendStyle } from './style'
 
 const href = new Href();
 
@@ -35,7 +36,7 @@ class Popup extends Component {
   }
   render() {
     return (
-      <div className="w3-modal" style={{display: this.props.show? 'block' : 'none'}}>
+      <div className="rjs-react-nav-modal" style={{display: this.props.show? 'block' : 'none'}}>
         {this.props.children}
       </div>
     )
@@ -118,6 +119,8 @@ class Navigator extends Component {
     this.__fire = this.__fire.bind(this);
     this.__createPopup = this.__createPopup.bind(this);
 
+    appendStyle();
+
     nav.register(this);
 
   }
@@ -151,13 +154,13 @@ class Navigator extends Component {
                     this.__popupStack[name] && this.__popupStack[name].map( (popup, index) => {
                       if (popup.self.overlay) {
                         return (
-                          <div key={index} className="w3-modal" style={{display: 'block'}}>
+                          <div key={index} className="rjs-react-nav-modal" style={{display: 'block'}}>
                              { React.createElement(popup.Popup, { self: popup.self, ...this.props, page }) }
                           </div>
                         )
                       } else {
                         return (
-                          <div key={index} className="w3-model-content">
+                          <div key={index} className="rjs-react-nav-model-content">
                             { React.createElement(popup.Popup, { self: popup.self, ...this.props, page }) }
                           </div>
                         )
@@ -175,13 +178,13 @@ class Navigator extends Component {
             this.__popupStack.__global && this.__popupStack.__global.map( (popup, index) => {
               if (popup.self.overlay) {
                 return (
-                  <div key={index} className="w3-modal" style={{display: 'block'}}>
+                  <div key={index} className="rjs-react-nav-modal" style={{display: 'block'}}>
                       { React.createElement(popup.Popup, { self: popup.self, ...this.props, page: this.__global }) }
                   </div>
                 )
               } else {
                 return (
-                  <div key={index} className="w3-model-content">
+                  <div key={index} className="rjs-react-nav-model-content">
                     { React.createElement(popup.Popup, { self: popup.self, ...this.props, page: this.__global }) }
                   </div>
                 )
@@ -207,7 +210,7 @@ class Navigator extends Component {
             this.state.toasts.bottom.map((toast, index) => {
               const style = toast.animateClosing ? animation('fade-out', toast.animateClosing) : {};
               return (
-                <div key = {index} className="w3-card-4" style = {style}>
+                <div key = {index} className="rjs-react-nav-card-4" style = {style}>
                   { React.createElement(toast.Toast, { self: toast.self }) }
                 </div>
               )
