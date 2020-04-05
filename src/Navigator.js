@@ -132,10 +132,13 @@ class Navigator extends Component {
     return (
       <div>
         {
-          this.state.routeStack.map((name, index) => {
-            const route = this.__registeredRoutes[name] || this.props.fallingRoute || null;
+          this.state.routeStack.map(({name, data}, index) => {
+            const route = this.__registeredRoutes[name] || this.props.fallbackRoute || null;
             const display = this.state.activeRoute === name ? 'block' : 'none';
             const page = route.page;
+            if (this.state.activeRoute === name) {
+              page.data = {...page.routeData, ...data};
+            }
             return (
               <div key = {index} style={{ display }}>
                 {/* Page */}
@@ -223,7 +226,10 @@ class Navigator extends Component {
       throw new Error(`Error: Validate props failed: 'initialRoute' is not listed in 'routes'`);
     }
     if (!this.props.noUrl && !this.props.fallbackRoute) {
-      console.warn("Warning: Validate props: Missing 'fallbackRoute'!")
+      console.warn("Warning: Validate props: Missing 'fallbackRoute'!");
+    }
+    if (this.props.fallbackRoute && !this.props.routes[this.props.fallbackRoute]) {
+      throw new Error(`Error: Validate props failed: 'fallbackRoute' is not listed in 'routes'`);
     }
   }
 
@@ -263,29 +269,30 @@ class Navigator extends Component {
   __initRouteStack() {
     const initRoute = this.__findInitialRoute();
     if (this.props.initialRouteStack) {
-      return [...this.props.initialRouteStack, initRoute].filter(e => e !== undefined);
+      return [this.props.initialRouteStack.map(route => { return {name:route}; }), {name:initRoute}].filter(e => e !== undefined);
     } else {
-      return [initRoute].filter(e => e !== undefined);
+      return [{name:initRoute}].filter(e => e !== undefined);
     }
   }
 
   __registerRoutes(routes) {
     this.__validateRoutes(routes);
     for (let name in routes) {
-      const page = this.__createInjectPage(name);
+      const page = this.__createInjectPage(name, routes[name]);
       this.__registeredRoutes[name] = routes[name];
       this.__registeredRoutes[name].page = page;
     }
     this.__bindPageEvent(routes);
   }
 
-  __createInjectPage(name) {
+  __createInjectPage(name, route) {
     const page = {
       on: (event, handler) => {
         if (this.__supportedPageEvents.indexOf(event) !== -1) {
           this.__events[name][event].push(handler);
         }
       },
+      routeData: {...route.data},
       popup: (popup, options, cb) => this.__createPopup(name, popup, options, cb),
     }
     this.__supportedPageEvents.forEach( e => page[`on${capitalize(e)}`] = handler => page.on(e, handler) );
@@ -322,8 +329,11 @@ class Navigator extends Component {
       }
       const activeRoute = name;
       const routeStack = [...this.state.routeStack];
-      if (routeStack.indexOf(name) === -1) {
-        routeStack.push(name);
+      const route = routeStack.find(route => route.name === name);
+      if (route) {
+        route.data = options && options.data
+      } else {
+        routeStack.push({name, data: options && options.data});        ;
       }
       this.__fire(this.state.activeRoute, 'leave');
       this.__fire(activeRoute, 'beforeEnter');

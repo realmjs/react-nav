@@ -156,7 +156,7 @@ class Page_Home extends Component {
         </div>
         <hr />
         <p>
-          <button className = "w3-button w3-green" onClick = {e => this.navigate()}> Move to page Welcome (after {this.state.count}s) </button>
+          <button className = "w3-button w3-green" onClick = {e => this.navigate()}> Move to page Welcome Foo (after {this.state.count}s) </button>
         </p>
       </div>
     );
@@ -165,7 +165,7 @@ class Page_Home extends Component {
     const t = setInterval( _ => {
       if (this.state.count === 0) {
         clearInterval(t);
-        this.props.route && this.props.route.navigate('welcome');
+        this.props.route && this.props.route.navigate('welcome', {data: {user: 'Foo'}});
         return;
       }
       this.setState({ count: this.state.count - 1 });
@@ -221,9 +221,10 @@ class Page_Welcome extends Component {
     props.page.onLeave(e => console.log('# Leave Page Welcome'));
   }
   render() {
+    const data = this.props.page.data;
     return (
       <div className = "w3-container">
-        <h2 className = " w3-text-green"> WELCOME </h2>
+        <h2 className = " w3-text-green"> WELCOME {data && data.user} </h2>
         <p className = "w3-text-grey"> Welcome page </p>
         <hr />
         <p>
@@ -238,10 +239,11 @@ class Page_Welcome extends Component {
 
 class Page_Error extends Component {
   render() {
+    const data = this.props.page.data;
     return (
       <div className = "w3-container">
-        <h2 className = " w3-text-red"> Error </h2>
-        <p className = "w3-text-grey"> Error description </p>
+        <h2 className = " w3-text-red"> Error: {data && data.error || 'Unknown'} </h2>
+        <p className = "w3-text-grey"> {data && data.message || 'Unexpected unknown error has occured'} </p>
       </div>
     );
   }
@@ -250,8 +252,8 @@ class Page_Error extends Component {
 const routes = {
   home: { Page: Page_Home, url: '/' },
   landing: {url: '/landing', redirect: 'home'},
-  welcome: { Page: Page_Welcome, url: '/welcome' },
-  error: { Page: Page_Error, url: '/error' },
+  welcome: { Page: Page_Welcome, url: '/welcome', data: {user: '$USER'} },
+  error404: { Page: Page_Error, url: '/error/404', data: {error: 404, message: 'Page not found'} },
 };
 
 class Demo extends Component {
@@ -265,7 +267,7 @@ class Demo extends Component {
       <div className="w3-container">
         <div className = "w3-bar w3-border-bottom w3-padding">
           <button className = "w3-bar-item w3-button w3-text-blue" onClick = {e => this.navToHome()}> Home </button>
-          <button className = "w3-bar-item w3-button w3-text-green" onClick = {e => this.route.navigate('welcome')}> Welcome </button>
+          <button className = "w3-bar-item w3-button w3-text-green" onClick = {e => this.route.navigate('welcome', {data: {user: 'Bar'}})}> Welcome </button>
           <button className = "w3-bar-item w3-button w3-text-grey" onClick = {e => this.popupLoading()}> Global Popup Loading </button>
           <button className = "w3-bar-item w3-button w3-text-grey" onClick = {e => this.popupOverlay()}> Global Popup Overlay </button>
           <span className = "w3-right">
@@ -278,7 +280,7 @@ class Demo extends Component {
           this.state.ui === 1 ?
             <Navigator  routes = {routes}
                         initialRoute = 'home'
-                        fallbackRoute = 'error'
+                        fallbackRoute = 'error404'
                         routeHandler = { routeHandler => this.route = routeHandler }
                         {...this.props}
                         noUrl = {false}
