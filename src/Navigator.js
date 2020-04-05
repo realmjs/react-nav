@@ -135,7 +135,7 @@ class Navigator extends Component {
           this.state.routeStack.map((name, index) => {
             const route = this.__registeredRoutes[name] || this.props.fallingRoute || null;
             const display = this.state.activeRoute === name ? 'block' : 'none';
-            const page = this.__createInjectPage(name);
+            const page = route.page;
             return (
               <div key = {index} style={{ display }}>
                 {/* Page */}
@@ -272,7 +272,9 @@ class Navigator extends Component {
   __registerRoutes(routes) {
     this.__validateRoutes(routes);
     for (let name in routes) {
+      const page = this.__createInjectPage(name);
       this.__registeredRoutes[name] = routes[name];
+      this.__registeredRoutes[name].page = page;
     }
     this.__bindPageEvent(routes);
   }
