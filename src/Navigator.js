@@ -57,7 +57,7 @@ class Toast extends Component {
     } else {
       style.top = 0;
     }
-    const anim = this.props.bottom ? animation('slide-bottom', '0.4s') : animation('slide-top', '0.4s')
+    const anim = this.props.bottom ? animation('float-bottom', '0.4s') : animation('float-top', '0.4s')
     return (
       <div style = {{ ...style, ...anim}}>
         <div style = {{position: 'relative'}}>
@@ -101,7 +101,7 @@ class Navigator extends Component {
 
     this.__popupStack = {};
 
-    this.__global = { popup: (popup, options, cb) => this.__createPopup('__global', popup, options, cb) };
+    this.__global = { popup: (PopupComponent, options, cb) => this.__createPopup('__global', PopupComponent, options, cb) };
 
     // update url missmatch between route and url
     const __path = href.getPathName();
@@ -296,7 +296,7 @@ class Navigator extends Component {
         }
       },
       routeData: {...route.data},
-      popup: (popup, options, cb) => this.__createPopup(name, popup, options, cb),
+      popup: (PopupComponent, options, cb) => this.__createPopup(name, PopupComponent, options, cb),
     }
     this.__supportedPageEvents.forEach( e => page[`on${capitalize(e)}`] = handler => page.on(e, handler) );
     return page;
@@ -354,7 +354,7 @@ class Navigator extends Component {
     });
   }
 
-  __createPopup(name, popup, options, cb) {
+  __createPopup(name, PopupComponent, options, cb) {
     return new Promise((resolve, reject) => {
       let self = {};
       if (Object.prototype.toString.call(options) == '[object Function]') {
@@ -367,7 +367,7 @@ class Navigator extends Component {
       if (!this.__popupStack[name]) {
         this.__popupStack[name] = [];
       }
-      this.__popupStack[name].push({ Popup: popup, self, resolve, reject });
+      this.__popupStack[name].push({ Popup: PopupComponent, self, resolve, reject });
       const showPopup = {...this.state.showPopup};
       showPopup[name] = true;
       this.setState({ showPopup });
@@ -399,7 +399,7 @@ class Navigator extends Component {
     }
   }
 
-  __createToast(toast, options, cb) {
+  __createToast(ToastComponent, options, cb) {
     let self = {};
     if (Object.prototype.toString.call(options) == '[object Function]') {
       cb = options;
@@ -410,9 +410,9 @@ class Navigator extends Component {
     const top = [...this.state.toasts.top];
     const bottom = [...this.state.toasts.bottom];
     if (options && options.bottom) {
-      bottom.unshift({Toast: toast, self });
+      bottom.unshift({Toast: ToastComponent, self });
     } else {
-      top.unshift({Toast: toast, self });
+      top.unshift({Toast: ToastComponent, self });
     }
     const toasts = { top, bottom };
     this.setState({ toasts });

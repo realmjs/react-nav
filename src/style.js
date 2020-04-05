@@ -7,8 +7,8 @@ const css = `
 `;
 
 const animation = `
-@keyframes rjs-react-nav-animate-slide-top {from{top:-300px;opacity:0} to{top:0;opacity:1}}
-@keyframes rjs-react-nav-animate-slide-bottom {from{bottom:-300px;opacity:0} to{bottom:0;opacity:1}}
+@keyframes rjs-react-nav-animate-float-top {from{top:-300px;opacity:0} to{top:0;opacity:1}}
+@keyframes rjs-react-nav-animate-float-bottom {from{bottom:-300px;opacity:0} to{bottom:0;opacity:1}}
 @keyframes rjs-react-nav-animate-fade-in { from{opacity:0;} to{opacity:1;}}
 @keyframes rjs-react-nav-animate-fade-out { from{opacity:1;} to{opacity:0;}}
 `;
