@@ -84,7 +84,6 @@ class Navigator extends Component {
     super(props);
 
     this.__validateProps(props);
-    this.__validateRoutes(props.routes);
 
     this.state = {
       routeStack : this.__initRouteStack(),
@@ -93,20 +92,13 @@ class Navigator extends Component {
       toasts: { top: [], bottom: [] },
     };
 
-    this.route = {
-      navigate: this.navigate.bind(this)
-    };
-    props.routeHandler && props.routeHandler(this.route);
-
-    this.__registeredRoutes = {...props.routes};
-
     this.__supportedPageEvents = ['load', 'beforeEnter', 'enter', 'leave'];
     this.__events = {};
-    this.__bindPageEvent(this.__registeredRoutes);
+
+    this.__registeredRoutes = {};
+    this.__registerRoutes({...props.routes});
 
     this.__popupStack = {};
-
-    nav.register(this);
 
     this.__global = { popup: (popup, options, cb) => this.__createPopup('__global', popup, options, cb) };
 
@@ -117,9 +109,16 @@ class Navigator extends Component {
       href.push(route.url);
     }
 
+    this.route = {
+      navigate: this.navigate.bind(this)
+    };
+    props.routeHandler && props.routeHandler(this.route);
+
     this.__createInjectPage = this.__createInjectPage.bind(this);
     this.__fire = this.__fire.bind(this);
     this.__createPopup = this.__createPopup.bind(this);
+
+    nav.register(this);
 
   }
 
@@ -268,6 +267,14 @@ class Navigator extends Component {
     } else {
       return [initRoute].filter(e => e !== undefined);
     }
+  }
+
+  __registerRoutes(routes) {
+    this.__validateRoutes(routes);
+    for (let name in routes) {
+      this.__registeredRoutes[name] = routes[name];
+    }
+    this.__bindPageEvent(routes);
   }
 
   __createInjectPage(name) {
