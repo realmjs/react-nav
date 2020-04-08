@@ -98,7 +98,7 @@ route {
 ```
 `Page` is the React component (not React Element) you design for `route`.
 
-`url` is the path of `route`. If your app does not need url, you can ommit it and set prop `noUrl = {true}` in `Navigator`
+`url` is the path of `route` and case insensitive. If your app does not need url, you can ommit it and set prop `noUrl = {true}` in `Navigator`
 
 `data` is the data you want to pass into the rendered Page element of this `route`. For example, you design Page_Error component for show error message, then you define route error404 and error401 using that same Page_Error but different data
 
@@ -407,5 +407,8 @@ nav.toast(Toast_System, { data: 'System message' }, self => {
 ```
 
 **TODO:**
-1. Animation for popup
+1. Animation for popup & page
 1. Add Unit tests
+1. Validate href not duplicated
+1. Fix error: enter invalid route without fallbackRoute defined.
+1. support parameter in url such as /:id/blablabla

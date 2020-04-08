@@ -252,7 +252,7 @@ class Page_Error extends Component {
 const routes = {
   home: { Page: Page_Home, url: '/' },
   landing: {url: '/landing', redirect: 'home'},
-  welcome: { Page: Page_Welcome, url: '/welcome', data: {user: '$USER'} },
+  welcome: { Page: Page_Welcome, url: '/welcome/:user', data: {user: '$USER'} },
   error404: { Page: Page_Error, url: '/error/404', data: {error: 404, message: 'Page not found'} },
 };
 

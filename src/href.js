@@ -67,4 +67,53 @@ export default class Href {
     }
     this.__handlers[event].push(callback);
   }
+  matchUrlPath(url) {
+    const paths = this.getPathName().split('/').filter(u => u.length > 0).map(p => p.trim().toLowerCase());
+    const urls = url.split('/').filter(u => u.length > 0).map(u => u.trim().toLowerCase());
+    // console.log(`Matching urls = ${urls} . paths = ${paths}`)
+    // console.log(`   urls.length  = ${urls.length}`)
+    // console.log(`   paths.length = ${paths.length}`)
+    if (urls.length !== paths.length) {
+      return false;
+    }
+    for (let i = 0; i < urls.length; i++) {
+      // console.log(`   urls[${i}]  = ${urls[i]}`)
+      // console.log(`   paths[${i}] = ${paths[i]}`)
+      if (/^:/.test(urls[i])) {
+        continue;
+      }
+      if (urls[i] !== paths[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+  buildUrlPath(url, params) {
+    const urls = url.split('/').filter(u => u.length > 0).map(u => u.trim().toLowerCase());
+    let returnUrl = '';
+    for (let i = 0; i < urls.length; i++) {
+      if (/^:/.test(urls[i])) {
+        const p = urls[i].split(':').pop();
+        if (params && params[p]) {
+          returnUrl += `/${params[p]}`;
+        } else {
+          throw new Error(`Missing value for ${urls[i]} in ${url}`);
+        }
+      } else {
+        returnUrl += `/${urls[i]}`;
+      }
+    }
+    return returnUrl.length === 0? '/' : returnUrl;
+  }
+  extractUrlParams(url) {
+    const paths = this.getPathName().split('/').filter(u => u.length > 0);
+    const urls = url.split('/').filter(u => u.length > 0).map(u => u.trim().toLowerCase());
+    const params = {};
+    for (let i = 0; i < urls.length; i++) {
+      if (/^:/.test(urls[i])) {
+        params[urls[i].split(':').pop()] = paths[i];
+      }
+    }
+    return params;
+  }
 };

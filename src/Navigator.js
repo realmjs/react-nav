@@ -104,9 +104,8 @@ class Navigator extends Component {
     this.__global = { popup: (PopupComponent, options, cb) => this.__createPopup('__global', PopupComponent, options, cb) };
 
     // update url missmatch between route and url
-    const __path = href.getPathName();
     const route = this.__registeredRoutes[this.state.activeRoute];
-    if (route && route.url.replace(/\//g,'').toLowerCase() !== __path.toLowerCase()) {
+    if (!props.noUrl && route && !href.matchUrlPath(route.url)) {
       href.push(route.url);
     }
 
@@ -225,7 +224,7 @@ class Navigator extends Component {
     if (this.props.noUrl && !this.props.initialRoute) {
       throw new Error(`Error: Validate props failed: 'initialRoute' is required when 'noUrl' set to true`);
     }
-    if (!this.props.routes[this.props.initialRoute]) {
+    if (this.props.initialRoute && !this.props.routes[this.props.initialRoute]) {
       throw new Error(`Error: Validate props failed: 'initialRoute' is not listed in 'routes'`);
     }
     if (!this.props.noUrl && !this.props.fallbackRoute) {
@@ -259,10 +258,9 @@ class Navigator extends Component {
     if (this.props.noUrl) {
       return undefined;
     }
-    const __path = href.getPathName();
     for (let name in this.props.routes) {
       const route = this.props.routes[name];
-      if (route.url && route.url.replace(/\//g,'').toLowerCase() === __path.toLowerCase()) {
+      if (route.url && href.matchUrlPath(route.url)) {
         return route.redirect || name;
       }
     }
@@ -271,10 +269,18 @@ class Navigator extends Component {
 
   __initRouteStack() {
     const initRoute = this.__findInitialRoute();
+    const params = href.extractUrlParams(this.props.routes[initRoute].url);
     if (this.props.initialRouteStack) {
-      return [this.props.initialRouteStack.map(route => { return {name:route}; }), {name:initRoute}].filter(e => e !== undefined);
+      return  [
+                this.props.initialRouteStack
+                  .filter(route => route !== undefined && route !== initRoute)
+                  .map(route => {
+                    return { name: route };
+                  }),
+                { name:initRoute, data: params }
+              ];
     } else {
-      return [{name:initRoute}].filter(e => e !== undefined);
+      return [{name:initRoute, data: params}];
     }
   }
 
@@ -345,10 +351,11 @@ class Navigator extends Component {
         resolve();
         return
       }
+      const path = href.buildUrlPath(this.__registeredRoutes[name].url, options && options.data);
       if (options && options.reload) {
-        href.set(this.__registeredRoutes[name].url);
+        href.set(path);
       } else {
-        href.push(this.__registeredRoutes[name].url);
+        href.push(path);
       }
       resolve();
     });
