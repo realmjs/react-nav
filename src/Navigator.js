@@ -15,14 +15,14 @@ class Page extends Component {
     super(props);
   }
   componentDidMount() {
-    this.props.fire('load')
+    this.props.fire('load');
     if (this.props.active) {
-      this.props.fire('enter')
+      this.props.fire('enter');
     }
   }
   componentDidUpdate(prevProps) {
     if (this.props.active && !prevProps.active) {
-      this.props.fire('enter')
+      this.props.fire('enter');
     }
   }
   render() {
@@ -269,7 +269,7 @@ class Navigator extends Component {
 
   __initRouteStack() {
     const initRoute = this.__findInitialRoute();
-    const params = href.extractUrlParams(this.props.routes[initRoute].url);
+    const params = this.props.noUrl ? undefined : href.extractUrlParams(this.props.routes[initRoute].url);
     if (this.props.initialRouteStack) {
       return  [
                 this.props.initialRouteStack
@@ -303,6 +303,7 @@ class Navigator extends Component {
       },
       routeData: {...route.data},
       popup: (PopupComponent, options, cb) => this.__createPopup(name, PopupComponent, options, cb),
+      deleteAllPopups: () => this.__deleteAllPopups(name),
     }
     this.__supportedPageEvents.forEach( e => page[`on${capitalize(e)}`] = handler => page.on(e, handler) );
     return page;
@@ -403,6 +404,15 @@ class Navigator extends Component {
       showPopup[name] = this.__popupStack[name].length == 0 ? false : true;
       this.setState({ showPopup });
       reject && reject(error);
+    }
+  }
+
+  __deleteAllPopups(name) {
+    if (this.__popupStack[name] && this.__popupStack[name].length > 0) {
+      delete this.__popupStack[name];
+      const showPopup = {...this.state.showPopup};
+      showPopup[name] = false;
+      this.setState({ showPopup });
     }
   }
 

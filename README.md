@@ -411,4 +411,6 @@ nav.toast(Toast_System, { data: 'System message' }, self => {
 1. Add Unit tests
 1. Validate href not duplicated
 1. Fix error: enter invalid route without fallbackRoute defined.
-1. support parameter in url such as /:id/blablabla
+1. support change doc title for route
+1. add isActive to page
+1. HOw redirect route use to redirect to  route with param?
