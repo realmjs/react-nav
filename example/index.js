@@ -158,6 +158,9 @@ class Page_Home extends Component {
         <p>
           <button className = "w3-button w3-green" onClick = {e => this.navigate()}> Move to page Welcome Foo (after {this.state.count}s) </button>
         </p>
+        <p>
+          <button className = "w3-button w3-green" onClick = {e => nav.navigate('testmain')}> Move to Test Page Replace</button>
+        </p>
       </div>
     );
   }
@@ -249,11 +252,57 @@ class Page_Error extends Component {
   }
 }
 
+class Page_TestReplaceMain extends Component {
+  constructor(props) {
+    super(props);
+    props.page.onLoad(e => console.log('# Load Page Test Replace Main'));
+    props.page.onBeforeEnter(e => console.log('# Before Enter Page Test Replace Main'));
+    props.page.onEnter(e => console.log('# Enter Page Test Replace Main'));
+    props.page.onLeave(e => console.log('# Leave Page Test Replace Main'));
+    props.page.onUnload(e => console.log('# Unload Page Test Replace Main'));
+  }
+  render() {
+    const data = this.props.page.data;
+    return (
+      <div className = "w3-container">
+        <h2 className = " w3-text-red"> Main: click replaced by sub </h2>
+        <p>
+          <button className = "w3-button w3-red" onClick = {e => nav.replace('testsub')}> Replace by Sub</button>
+        </p>
+      </div>
+    );
+  }
+}
+
+class Page_TestReplaceSub extends Component {
+  constructor(props) {
+    super(props);
+    props.page.onLoad(e => console.log('# Load Page Test Replace Sub'));
+    props.page.onBeforeEnter(e => console.log('# Before Enter Page Test Replace Sub'));
+    props.page.onEnter(e => console.log('# Enter Page Test Replace Sub'));
+    props.page.onLeave(e => console.log('# Leave Page Test Replace Sub'));
+    props.page.onUnload(e => console.log('# Unload Page Test Replace Sub'));
+  }
+  render() {
+    const data = this.props.page.data;
+    return (
+      <div className = "w3-container">
+        <h2 className = " w3-text-red"> Sub: click replaced by main </h2>
+        <p>
+          <button className = "w3-button w3-green" onClick = {e => nav.replace('testmain')}> Replace by main</button>
+        </p>
+      </div>
+    );
+  }
+}
+
 const routes = {
   home: { Page: Page_Home, url: '/' },
   landing: {url: '/landing', redirect: 'home'},
   welcome: { Page: Page_Welcome, url: '/welcome/:user', data: {user: '$USER'} },
   error404: { Page: Page_Error, url: '/error/404', data: {error: 404, message: 'Page not found'} },
+  testmain: { Page: Page_TestReplaceMain, url: '/test/main'},
+  testsub: { Page: Page_TestReplaceSub, url: '/test/sub'},
 };
 
 class Demo extends Component {

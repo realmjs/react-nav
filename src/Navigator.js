@@ -93,7 +93,7 @@ class Navigator extends Component {
       toasts: { top: [], bottom: [] },
     };
 
-    this.__supportedPageEvents = ['load', 'beforeEnter', 'enter', 'leave'];
+    this.__supportedPageEvents = ['load', 'beforeEnter', 'enter', 'leave', 'unload'];
     this.__events = {};
 
     this.__registeredRoutes = {};
@@ -110,7 +110,8 @@ class Navigator extends Component {
     }
 
     this.route = {
-      navigate: this.navigate.bind(this)
+      navigate: this.navigate.bind(this),
+      replace: this.replace.bind(this),
     };
     props.routeHandler && props.routeHandler(this.route);
 
@@ -142,7 +143,7 @@ class Navigator extends Component {
               page.data = {...page.routeData, ...data};
             }
             return (
-              <div key = {index} style={{ display }}>
+              <div key = {name} style={{ display }}>
                 {/* Page */}
                 <Page fire = { e => this.__fire(name, e) } active = {this.state.activeRoute === name} >
                   { React.createElement(route.Page, { route: this.route, page, ...this.props }) }
@@ -346,6 +347,46 @@ class Navigator extends Component {
         routeStack.push({name, data: options && options.data});        ;
       }
       this.__fire(this.state.activeRoute, 'leave');
+      this.__fire(activeRoute, 'beforeEnter');
+      this.setState({ routeStack, activeRoute });
+      if ( this.props.noUrl || (options && options.noUpdateUrl) || !this.__registeredRoutes[name].url) {
+        resolve();
+        return
+      }
+      const path = href.buildUrlPath(this.__registeredRoutes[name].url, options && options.data);
+      if (options && options.reload) {
+        href.set(path);
+      } else {
+        href.push(path);
+      }
+      resolve();
+    });
+  }
+
+  replace(name, options) {
+    return new Promise( (resolve, reject) => {
+      if (name === this.state.activeRoute) {
+        resolve();
+        return
+      }
+      if (!this.__registeredRoutes[name]) {
+        reject(`Route ${name} is not registered!`);
+        return;
+      }
+      if(this.__registeredRoutes[name].redirect) {
+        name = this.__registeredRoutes[name].redirect;
+      }
+      const routeStack = this.state.routeStack.filter(route => route.name !== this.state.activeRoute);
+      console.log(routeStack)
+      const activeRoute = name;
+      const route = routeStack.find(route => route.name === name);
+      if (route) {
+        route.data = options && options.data
+      } else {
+        routeStack.push({name, data: options && options.data});        ;
+      }
+      this.__fire(this.state.activeRoute, 'leave');
+      this.__fire(this.state.activeRoute, 'unload');
       this.__fire(activeRoute, 'beforeEnter');
       this.setState({ routeStack, activeRoute });
       if ( this.props.noUrl || (options && options.noUpdateUrl) || !this.__registeredRoutes[name].url) {

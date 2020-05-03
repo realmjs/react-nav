@@ -31,6 +31,12 @@ export default {
     }
     return this.__route.navigate(route, options);
   },
+  replace(route, options) {
+    if (this.__route === null) {
+      return Promise.reject('Navigator is not mounted or has been destroyed');
+    }
+    return this.__route.replace(route, options);
+  },
   toast(ToastComponent, options, cb) {
     if (this.__toast === null) {
       return Promise.reject('Navigator is not mounted or has been destroyed');
