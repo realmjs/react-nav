@@ -168,7 +168,7 @@ class Page_Home extends Component {
     const t = setInterval( _ => {
       if (this.state.count === 0) {
         clearInterval(t);
-        this.props.route && this.props.route.navigate('welcome', {data: {user: 'Foo'}});
+        this.props.nav && this.props.nav.navigate('welcome', {params: {user: 'Foo'}});
         return;
       }
       this.setState({ count: this.state.count - 1 });
@@ -224,16 +224,16 @@ class Page_Welcome extends Component {
     props.page.onLeave(e => console.log('# Leave Page Welcome'));
   }
   render() {
-    const data = this.props.page.data;
+    const params = this.props.route.params;
     return (
       <div className = "w3-container">
-        <h2 className = " w3-text-green"> WELCOME {data && data.user} </h2>
+        <h2 className = " w3-text-green"> WELCOME {params && params.user} </h2>
         <p className = "w3-text-grey"> Welcome page </p>
         <hr />
         <p>
-          <button className = "w3-button w3-blue" onClick = {e => this.props.route.navigate('home')}> Move to page Home </button>
+          <button className = "w3-button w3-blue" onClick = {e => this.props.nav.navigate('home')}> Move to page Home </button>
           {' '}
-          <button className = "w3-button w3-blue" onClick = {e => this.props.route.navigate('landing')}> Move to page Landing </button>
+          <button className = "w3-button w3-blue" onClick = {e => this.props.nav.navigate('landing')}> Move to page Landing </button>
         </p>
       </div>
     );
@@ -316,7 +316,7 @@ class Demo extends Component {
       <div className="w3-container">
         <div className = "w3-bar w3-border-bottom w3-padding">
           <button className = "w3-bar-item w3-button w3-text-blue" onClick = {e => this.navToHome()}> Home </button>
-          <button className = "w3-bar-item w3-button w3-text-green" onClick = {e => this.route.navigate('welcome', {data: {user: 'Bar'}})}> Welcome </button>
+          <button className = "w3-bar-item w3-button w3-text-green" onClick = {e => this.route.navigate('welcome', {params: {user: 'Bar'}})}> Welcome </button>
           <button className = "w3-bar-item w3-button w3-text-grey" onClick = {e => this.popupLoading()}> Global Popup Loading </button>
           <button className = "w3-bar-item w3-button w3-text-grey" onClick = {e => this.popupOverlay()}> Global Popup Overlay </button>
           <span className = "w3-right">

@@ -76,7 +76,6 @@ class Navigator extends Component {
   /**
    * Navigator component that render Page for each Route
    * @param {Array} routes - Object of routes thata are registered
-   * @param {Array} initialRouteStack - Array contains the initial routes from the Navigator
    * @param {Object} initialRoute - The initial routes of the Navigator
    * @param {Function} routeHandler - FUnction return route handler
    * @param {Object} animation
@@ -109,11 +108,11 @@ class Navigator extends Component {
       href.push(route.url);
     }
 
-    this.route = {
+    this.nav = {
       navigate: this.navigate.bind(this),
       replace: this.replace.bind(this),
     };
-    props.routeHandler && props.routeHandler(this.route);
+    props.routeHandler && props.routeHandler(this.nav);
 
     this.__createInjectPage = this.__createInjectPage.bind(this);
     this.__fire = this.__fire.bind(this);
@@ -135,18 +134,25 @@ class Navigator extends Component {
     return (
       <div>
         {
-          this.state.routeStack.map(({name, data}, index) => {
+          this.state.routeStack.map(({name, pageData, params}, index) => {
             const route = this.__registeredRoutes[name] || this.props.fallbackRoute || null;
             const display = this.state.activeRoute === name ? 'block' : 'none';
             const page = route.page;
             if (this.state.activeRoute === name) {
-              page.data = {...page.routeData, ...data};
+              page.data = {...pageData};
             }
+            const passingRouteObj = {
+              url : route.url,
+              data: route.data,
+              params,
+            };
             return (
               <div key = {name} style={{ display }}>
                 {/* Page */}
                 <Page fire = { e => this.__fire(name, e) } active = {this.state.activeRoute === name} >
-                  { React.createElement(route.Page, { route: this.route, page, ...this.props }) }
+                  {
+                    React.createElement(route.Page, { route: passingRouteObj, nav: this.nav, page, ...this.props })
+                  }
                 </Page>
                 {/* Popup */}
                 <Popup  show = {this.state.showPopup[name]} >
@@ -271,38 +277,27 @@ class Navigator extends Component {
   __initRouteStack() {
     const initRoute = this.__findInitialRoute();
     const params = this.props.noUrl ? undefined : href.extractUrlParams(this.props.routes[initRoute].url);
-    if (this.props.initialRouteStack) {
-      return  [
-                this.props.initialRouteStack
-                  .filter(route => route !== undefined && route !== initRoute)
-                  .map(route => {
-                    return { name: route };
-                  }),
-                { name:initRoute, data: params }
-              ];
-    } else {
-      return [{name:initRoute, data: params}];
-    }
+    return [{name:initRoute, params}];
   }
 
   __registerRoutes(routes) {
     this.__validateRoutes(routes);
     for (let name in routes) {
-      const page = this.__createInjectPage(name, routes[name]);
-      this.__registeredRoutes[name] = routes[name];
+      const route = routes[name];
+      this.__registeredRoutes[name] = route;
+      const page = this.__createInjectPage(name);
       this.__registeredRoutes[name].page = page;
     }
     this.__bindPageEvent(routes);
   }
 
-  __createInjectPage(name, route) {
+  __createInjectPage(name) {
     const page = {
       on: (event, handler) => {
         if (this.__supportedPageEvents.indexOf(event) !== -1) {
           this.__events[name][event].push(handler);
         }
       },
-      routeData: {...route.data},
       popup: (PopupComponent, options, cb) => this.__createPopup(name, PopupComponent, options, cb),
       deleteAllPopups: () => this.__deleteAllPopups(name),
     }
@@ -342,9 +337,14 @@ class Navigator extends Component {
       const routeStack = [...this.state.routeStack];
       const route = routeStack.find(route => route.name === name);
       if (route) {
-        route.data = options && options.data
+        route.pageData = options && options.data;
+        route.params = options && options.params;
       } else {
-        routeStack.push({name, data: options && options.data});        ;
+        routeStack.push({
+          name,
+          pageData: options && options.data,
+          params: options && options.params,
+        });
       }
       this.__fire(this.state.activeRoute, 'leave');
       this.__fire(activeRoute, 'beforeEnter');
@@ -353,7 +353,7 @@ class Navigator extends Component {
         resolve();
         return
       }
-      const path = href.buildUrlPath(this.__registeredRoutes[name].url, options && options.data);
+      const path = href.buildUrlPath(this.__registeredRoutes[name].url, options && options.params);
       if (options && options.reload) {
         href.set(path);
       } else {
