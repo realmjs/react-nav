@@ -4,7 +4,7 @@ import React, { Component } from 'react'
 
 import nav from './nav'
 import Href from './href'
-import { capitalize } from './util'
+import { capitalize, isFunction } from './util'
 import animation from './animation'
 import { appendStyle } from './style'
 
@@ -86,8 +86,8 @@ class Navigator extends Component {
     this.__validateProps(props);
 
     this.state = {
-      routeStack : this.__initRouteStack(),
-      activeRoute: this.__findInitialRoute(),
+      routeStack : [],
+      activeRoute: this.__findInitialRouteName(),
       showPopup: {},
       toasts: { top: [], bottom: [] },
     };
@@ -124,6 +124,12 @@ class Navigator extends Component {
 
   }
 
+  componentDidMount() {
+    this.__initRouteStack().then(routeStack => {
+      this.setState({ routeStack });
+    });
+  }
+
   componentWillUnmount() {
     // clean up to avoid memory leak
     nav.destroy();
@@ -134,7 +140,7 @@ class Navigator extends Component {
     return (
       <div>
         {
-          this.state.routeStack.map(({name, pageData, params}, index) => {
+          this.state.routeStack.map(({name, pageData, routeData, params}, index) => {
             const route = this.__registeredRoutes[name] || this.props.fallbackRoute || null;
             const display = this.state.activeRoute === name ? 'block' : 'none';
             const page = route.page;
@@ -143,7 +149,7 @@ class Navigator extends Component {
             }
             const passingRouteObj = {
               url : route.url,
-              data: route.data,
+              data: routeData || route.data,
               params,
             };
             return (
@@ -254,7 +260,7 @@ class Navigator extends Component {
     }
   }
 
-  __findInitialRoute() {
+  __findInitialRouteName() {
     if (this.props.noUrl) {
         return this.props.initialRoute;
     }
@@ -275,9 +281,20 @@ class Navigator extends Component {
   }
 
   __initRouteStack() {
-    const initRoute = this.__findInitialRoute();
-    const params = this.props.noUrl ? undefined : href.extractUrlParams(this.props.routes[initRoute].url);
-    return [{name:initRoute, params}];
+    return new Promise((resolve, reject) => {
+      const initRouteName = this.__findInitialRouteName();
+      const initRoute = this.props.routes[initRouteName];
+      const params = this.props.noUrl ? undefined : href.extractUrlParams(initRoute.url);
+      if (isFunction(initRoute.data)) {
+        initRoute.data({ params, props: this.props })
+                  .then(data => {
+                    resolve([{name:initRouteName, params, routeData: data}])
+                  })
+                  .catch(err => reject(err));
+      } else {
+        resolve([{name:initRouteName, params}]);
+      }
+    })
   }
 
   __registerRoutes(routes) {
@@ -330,38 +347,60 @@ class Navigator extends Component {
         reject(`Route ${name} is not registered!`);
         return;
       }
-      if(this.__registeredRoutes[name].redirect) {
-        name = this.__registeredRoutes[name].redirect;
-      }
-      const activeRoute = name;
-      const routeStack = [...this.state.routeStack];
-      const route = routeStack.find(route => route.name === name);
-      if (route) {
-        route.pageData = options && options.data;
-        route.params = options && options.params;
+
+      if (isFunction(this.__registeredRoutes[name].data)) {
+        return this.__registeredRoutes[name].data({ params: options && options.params || undefined, props: this.props })
+                                            .then(changeRoute.bind(this))
+                                            .catch(err => reject(err));
       } else {
-        routeStack.push({
-          name,
-          pageData: options && options.data,
-          params: options && options.params,
+        return changeRoute.bind(this)();
+      }
+
+      function changeRoute(data) {
+        return new Promise((resolve) => {
+          this.__fire(this.state.activeRoute, 'leave');
+
+          if(this.__registeredRoutes[name].redirect) {
+            name = this.__registeredRoutes[name].redirect;
+          }
+
+          const routeStack = [...this.state.routeStack];
+          const route = routeStack.find(route => route.name === name);
+          const pageData = options && options.data;
+          if (route) {
+            route.pageData = pageData;
+            route.routeData = data;
+            route.params = options && options.params;
+          } else {
+            routeStack.push({
+              name,
+              pageData: pageData,
+              routeData: data,
+              params: options && options.params,
+            });
+          }
+
+          const activeRoute = name;
+          this.__fire(activeRoute, 'beforeEnter');
+          this.setState({ routeStack, activeRoute });
+          if ( this.props.noUrl || (options && options.noUpdateUrl) || !this.__registeredRoutes[name].url) {
+            resolve();
+            return
+          }
+
+          const path = href.buildUrlPath(this.__registeredRoutes[name].url, options && options.params);
+          if (options && options.reload) {
+            href.set(path);
+          } else {
+            href.push(path);
+          }
+          resolve();
         });
       }
-      this.__fire(this.state.activeRoute, 'leave');
-      this.__fire(activeRoute, 'beforeEnter');
-      this.setState({ routeStack, activeRoute });
-      if ( this.props.noUrl || (options && options.noUpdateUrl) || !this.__registeredRoutes[name].url) {
-        resolve();
-        return
-      }
-      const path = href.buildUrlPath(this.__registeredRoutes[name].url, options && options.params);
-      if (options && options.reload) {
-        href.set(path);
-      } else {
-        href.push(path);
-      }
-      resolve();
+
     });
   }
+
 
   replace(name, options) {
     return new Promise( (resolve, reject) => {
@@ -403,56 +442,56 @@ class Navigator extends Component {
     });
   }
 
-  __createPopup(name, PopupComponent, options, cb) {
+  __createPopup(scope, PopupComponent, options, cb) {
     return new Promise((resolve, reject) => {
       let self = {};
-      if (Object.prototype.toString.call(options) == '[object Function]') {
+      if (isFunction(options)) {
         cb = options;
       } else {
         self = { ...options };
       }
-      self.resolve = (data) => this.__popupResolve(name, data, self);
-      self.reject = (error) => this.__popupReject(name, error, self);
-      if (!this.__popupStack[name]) {
-        this.__popupStack[name] = [];
+      self.resolve = (data) => this.__popupResolve(scope, data, self);
+      self.reject = (error) => this.__popupReject(scope, error, self);
+      if (!this.__popupStack[scope]) {
+        this.__popupStack[scope] = [];
       }
-      this.__popupStack[name].push({ Popup: PopupComponent, self, resolve, reject });
+      this.__popupStack[scope].push({ Popup: PopupComponent, self, resolve, reject });
       const showPopup = {...this.state.showPopup};
-      showPopup[name] = true;
+      showPopup[scope] = true;
       this.setState({ showPopup });
       cb && cb({ resolve: self.resolve, reject: self.reject });
     });
   }
 
-  __popupResolve(name, data, self) {
-    if (this.__popupStack[name] && this.__popupStack[name].length > 0) {
-      const index =  this.__popupStack[name].findIndex( p => p.self === self);
+  __popupResolve(scope, data, self) {
+    if (this.__popupStack[scope] && this.__popupStack[scope].length > 0) {
+      const index =  this.__popupStack[scope].findIndex( p => p.self === self);
       if (index === -1) { return; }
-      const { resolve } = this.__popupStack[name].splice(index, 1)[0];
+      const { resolve } = this.__popupStack[scope].splice(index, 1)[0];
       const showPopup = {...this.state.showPopup};
-      showPopup[name] = this.__popupStack[name].length == 0 ? false : true;
+      showPopup[scope] = this.__popupStack[scope].length == 0 ? false : true;
       this.setState({ showPopup });
       resolve && resolve(data);
     }
   }
 
-  __popupReject(name, error, self) {
-    if (this.__popupStack[name] && this.__popupStack[name].length > 0) {
-      const index =  this.__popupStack[name].findIndex( p => p.self === self);
+  __popupReject(scope, error, self) {
+    if (this.__popupStack[scope] && this.__popupStack[scope].length > 0) {
+      const index =  this.__popupStack[scope].findIndex( p => p.self === self);
       if (index === -1) { return; }
-      const { reject } = this.__popupStack[name].splice(index, 1)[0];
+      const { reject } = this.__popupStack[scope].splice(index, 1)[0];
       const showPopup = {...this.state.showPopup};
-      showPopup[name] = this.__popupStack[name].length == 0 ? false : true;
+      showPopup[scope] = this.__popupStack[scope].length == 0 ? false : true;
       this.setState({ showPopup });
       reject && reject(error);
     }
   }
 
-  __deleteAllPopups(name) {
-    if (this.__popupStack[name] && this.__popupStack[name].length > 0) {
-      delete this.__popupStack[name];
+  __deleteAllPopups(scope) {
+    if (this.__popupStack[scope] && this.__popupStack[scope].length > 0) {
+      delete this.__popupStack[scope];
       const showPopup = {...this.state.showPopup};
-      showPopup[name] = false;
+      showPopup[scope] = false;
       this.setState({ showPopup });
     }
   }

@@ -80,6 +80,34 @@ class Popup_Overlay extends Component {
   }
 }
 
+class Popup_GetInput extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { value: '' };
+  }
+  render() {
+    return (
+      <div className="w3-round w3-white w3-card-4 w3-container" style={{ margin: 'auto', width: '300px' }}>
+        <h3 className = "w3-text-blue"> Get Input </h3>
+        <p> Type to the box below </p>
+        <p>
+          <input className="w3-input" type="text" value = {this.state.value} onChange = {this.handleInput.bind(this)} />
+        </p>
+        <p>
+          <button className="w3-button w3-blue" onClick={e => this.confirm()}> OK </button>
+        </p>
+      </div>
+    )
+  }
+  handleInput(e) {
+    const value = e.target.value;
+    this.setState({ value });
+  }
+  confirm() {
+    this.props.self.resolve(this.state.value);
+  }
+}
+
 class Toast_Success extends Component {
   render() {
     return (
@@ -296,6 +324,22 @@ class Page_TestReplaceSub extends Component {
   }
 }
 
+function Page_Greeting ({ route }) {
+
+  const team = route.params.team;
+  const name = route.data;
+
+  return (
+    <div className = "w3-container">
+        <h2 className = " w3-text-green"> Greeting {name} @ {team} </h2>
+        <hr />
+        <p>
+          <button className = "w3-button w3-blue" onClick = {e => nav.navigate('home')}> Back to Home </button>
+        </p>
+      </div>
+  )
+}
+
 const routes = {
   home: { Page: Page_Home, url: '/' },
   landing: {url: '/landing', redirect: 'home'},
@@ -303,6 +347,7 @@ const routes = {
   error404: { Page: Page_Error, url: '/error/404', data: {error: 404, message: 'Page not found'} },
   testmain: { Page: Page_TestReplaceMain, url: '/test/main'},
   testsub: { Page: Page_TestReplaceSub, url: '/test/sub'},
+  greeting: { Page: Page_Greeting, url: '/greeting/:team', data: () => nav.popup(Popup_GetInput) },
 };
 
 class Demo extends Component {
@@ -317,6 +362,7 @@ class Demo extends Component {
         <div className = "w3-bar w3-border-bottom w3-padding">
           <button className = "w3-bar-item w3-button w3-text-blue" onClick = {e => this.navToHome()}> Home </button>
           <button className = "w3-bar-item w3-button w3-text-green" onClick = {e => this.route.navigate('welcome', {params: {user: 'Bar'}})}> Welcome </button>
+          <button className = "w3-bar-item w3-button w3-text-green" onClick = {e => this.route.navigate('greeting', {params: {team: 'test'}})}> Greeting </button>
           <button className = "w3-bar-item w3-button w3-text-grey" onClick = {e => this.popupLoading()}> Global Popup Loading </button>
           <button className = "w3-bar-item w3-button w3-text-grey" onClick = {e => this.popupOverlay()}> Global Popup Overlay </button>
           <span className = "w3-right">
