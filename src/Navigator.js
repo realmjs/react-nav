@@ -4,7 +4,7 @@ import React, { Component } from 'react'
 
 import nav from './nav'
 import Href from './href'
-import { capitalize, isFunction } from './util'
+import { capitalize, isFunction, isSameRoute, createRouteUid } from './util'
 import animation from './animation'
 import { appendStyle } from './style'
 
@@ -87,7 +87,7 @@ class Navigator extends Component {
 
     this.state = {
       routeStack : [],
-      activeRoute: this.__findInitialRouteName(),
+      activeRouteName: this.__findInitialRouteName(),
       showPopup: {},
       toasts: { top: [], bottom: [] },
     };
@@ -103,14 +103,13 @@ class Navigator extends Component {
     this.__global = { popup: (PopupComponent, options, cb) => this.__createPopup('__global', PopupComponent, options, cb) };
 
     // update url missmatch between route and url
-    const route = this.__registeredRoutes[this.state.activeRoute];
+    const route = this.__registeredRoutes[this.state.activeRouteName];
     if (!props.noUrl && route && !href.matchUrlPath(route.url)) {
       href.push(route.url);
     }
 
     this.nav = {
       navigate: this.navigate.bind(this),
-      replace: this.replace.bind(this),
     };
     props.routeHandler && props.routeHandler(this.nav);
 
@@ -126,12 +125,12 @@ class Navigator extends Component {
 
   componentDidMount() {
     this.__initRouteStack().then(routeStack => {
-      this.setState({ routeStack });
+      const activeRouteName = routeStack[0].name;
+      this.setState({ routeStack, activeRouteName });
     });
   }
 
   componentWillUnmount() {
-    // clean up to avoid memory leak
     nav.destroy();
     this.props.routeHandler && this.props.routeHandler(null);
   }
@@ -140,24 +139,21 @@ class Navigator extends Component {
     return (
       <div>
         {
-          this.state.routeStack.map(({name, pageData, routeData, params}, index) => {
-            const route = this.__registeredRoutes[name] || this.props.fallbackRoute || null;
-            const display = this.state.activeRoute === name ? 'block' : 'none';
-            const page = route.page;
-            if (this.state.activeRoute === name) {
-              page.data = {...pageData};
-            }
+          this.state.routeStack.map((route, index) => {
+            const {name, url, page, data, params, uid} = route;
+            const display = index === 0 ? 'block' : 'none';
             const passingRouteObj = {
-              url : route.url,
-              data: routeData || route.data,
+              url,
+              data,
               params,
             };
+            const PageComponent = this.__registeredRoutes[name].Page;
             return (
-              <div key = {name} style={{ display }}>
+              <div key = {uid} style={{ display }}>
                 {/* Page */}
-                <Page fire = { e => this.__fire(name, e) } active = {this.state.activeRoute === name} >
+                <Page fire = { e => this.__fire(name, uid, e) } active = {index === 0} >
                   {
-                    React.createElement(route.Page, { route: passingRouteObj, nav: this.nav, page, ...this.props })
+                    React.createElement(PageComponent, { route: passingRouteObj, nav: this.nav, page, ...this.props })
                   }
                 </Page>
                 {/* Popup */}
@@ -285,14 +281,17 @@ class Navigator extends Component {
       const initRouteName = this.__findInitialRouteName();
       const initRoute = this.props.routes[initRouteName];
       const params = this.props.noUrl ? undefined : href.extractUrlParams(initRoute.url);
+      const url = initRoute.url;
+      const uid = createRouteUid(initRouteName, params);
+      const page = this.__createInjectPage(initRouteName, uid);
       if (isFunction(initRoute.data)) {
         initRoute.data({ params, props: this.props })
                   .then(data => {
-                    resolve([{name:initRouteName, params, routeData: data}])
+                    resolve([{name:initRouteName, url, page, params, data, uid}])
                   })
                   .catch(err => reject(err));
       } else {
-        resolve([{name:initRouteName, params}]);
+        resolve([{name:initRouteName, url, page, params, data: initRoute.data, uid}]);
       }
     })
   }
@@ -302,21 +301,20 @@ class Navigator extends Component {
     for (let name in routes) {
       const route = routes[name];
       this.__registeredRoutes[name] = route;
-      const page = this.__createInjectPage(name);
-      this.__registeredRoutes[name].page = page;
     }
     this.__bindPageEvent(routes);
   }
 
-  __createInjectPage(name) {
+  __createInjectPage(name, uid, options) {
     const page = {
       on: (event, handler) => {
         if (this.__supportedPageEvents.indexOf(event) !== -1) {
-          this.__events[name][event].push(handler);
+          this.__events[name][event].push({ uid, handler });
         }
       },
       popup: (PopupComponent, options, cb) => this.__createPopup(name, PopupComponent, options, cb),
       deleteAllPopups: () => this.__deleteAllPopups(name),
+      data: options && options.data || undefined,
     }
     this.__supportedPageEvents.forEach( e => page[`on${capitalize(e)}`] = handler => page.on(e, handler) );
     return page;
@@ -329,9 +327,9 @@ class Navigator extends Component {
     }
   }
 
-  __fire(route, event) {
+  __fire(route, uid, event) {
     if (this.__events[route][event]) {
-      this.__events[route][event].forEach( handler => handler() );
+      this.__events[route][event].forEach( e => e.uid === uid && e.handler() );
     } else {
       console.error(`event ${event} is not supported`)
     }
@@ -339,13 +337,17 @@ class Navigator extends Component {
 
   navigate(name, options) {
     return new Promise( (resolve, reject) => {
-      if (name === this.state.activeRoute) {
-        resolve();
-        return
-      }
+
       if (!this.__registeredRoutes[name]) {
         reject(`Route ${name} is not registered!`);
         return;
+      }
+
+      const params = options && options.params || {};
+
+      if (isSameRoute(this.state.routeStack[0], name, params)) {
+        resolve();
+        return
       }
 
       if (isFunction(this.__registeredRoutes[name].data)) {
@@ -356,33 +358,24 @@ class Navigator extends Component {
         return changeRoute.bind(this)();
       }
 
-      function changeRoute(data) {
+      function changeRoute(routeData) {
         return new Promise((resolve) => {
-          this.__fire(this.state.activeRoute, 'leave');
-
           if(this.__registeredRoutes[name].redirect) {
             name = this.__registeredRoutes[name].redirect;
           }
 
-          const routeStack = [...this.state.routeStack];
-          const route = routeStack.find(route => route.name === name);
-          const pageData = options && options.data;
-          if (route) {
-            route.pageData = pageData;
-            route.routeData = data;
-            route.params = options && options.params;
-          } else {
-            routeStack.push({
-              name,
-              pageData: pageData,
-              routeData: data,
-              params: options && options.params,
-            });
-          }
+          this.__fire(this.state.activeRouteName, this.state.routeStack[0].uid, 'leave');
 
-          const activeRoute = name;
-          this.__fire(activeRoute, 'beforeEnter');
-          this.setState({ routeStack, activeRoute });
+          const routeStack = [...this.state.routeStack].filter( route =>  !isSameRoute(route, name, params) );
+          const url = this.__registeredRoutes[name].url;
+          const uid = createRouteUid(name, params);
+          const page = this.__createInjectPage(name, uid, options);
+          routeStack.unshift({ name, url, page, data: routeData, params, uid });
+
+
+          const activeRouteName = name;
+          this.__fire(activeRouteName, uid, 'beforeEnter');
+          this.setState({ routeStack, activeRouteName });
           if ( this.props.noUrl || (options && options.noUpdateUrl) || !this.__registeredRoutes[name].url) {
             resolve();
             return
@@ -398,47 +391,6 @@ class Navigator extends Component {
         });
       }
 
-    });
-  }
-
-
-  replace(name, options) {
-    return new Promise( (resolve, reject) => {
-      if (name === this.state.activeRoute) {
-        resolve();
-        return
-      }
-      if (!this.__registeredRoutes[name]) {
-        reject(`Route ${name} is not registered!`);
-        return;
-      }
-      if(this.__registeredRoutes[name].redirect) {
-        name = this.__registeredRoutes[name].redirect;
-      }
-      const routeStack = this.state.routeStack.filter(route => route.name !== this.state.activeRoute);
-      console.log(routeStack)
-      const activeRoute = name;
-      const route = routeStack.find(route => route.name === name);
-      if (route) {
-        route.data = options && options.data
-      } else {
-        routeStack.push({name, data: options && options.data});        ;
-      }
-      this.__fire(this.state.activeRoute, 'leave');
-      this.__fire(this.state.activeRoute, 'unload');
-      this.__fire(activeRoute, 'beforeEnter');
-      this.setState({ routeStack, activeRoute });
-      if ( this.props.noUrl || (options && options.noUpdateUrl) || !this.__registeredRoutes[name].url) {
-        resolve();
-        return
-      }
-      const path = href.buildUrlPath(this.__registeredRoutes[name].url, options && options.data);
-      if (options && options.reload) {
-        href.set(path);
-      } else {
-        href.push(path);
-      }
-      resolve();
     });
   }
 

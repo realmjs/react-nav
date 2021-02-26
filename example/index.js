@@ -156,7 +156,7 @@ class Toast_System extends Component {
 class Page_Home extends Component {
   constructor(props) {
     super(props);
-    this.state = { count: 5 };
+    this.state = { count: 2 };
     props.page.onLoad(e => console.log('# Load Page Home'));
     props.page.onBeforeEnter(e => console.log('# Before Enter Page Home'));
     props.page.onEnter(e => { console.log('# Enter Page Home'); this.setState({ count: 5 }) });
@@ -270,7 +270,7 @@ class Page_Welcome extends Component {
 
 class Page_Error extends Component {
   render() {
-    const data = this.props.page.data;
+    const data = this.props.route.data;
     return (
       <div className = "w3-container">
         <h2 className = " w3-text-red"> Error: {data && data.error || 'Unknown'} </h2>
@@ -295,7 +295,7 @@ class Page_TestReplaceMain extends Component {
       <div className = "w3-container">
         <h2 className = " w3-text-red"> Main: click replaced by sub </h2>
         <p>
-          <button className = "w3-button w3-red" onClick = {e => nav.replace('testsub')}> Replace by Sub</button>
+          <button className = "w3-button w3-red" onClick = {e => nav.navigate('testsub', { reload: true })}> Replace by Sub</button>
         </p>
       </div>
     );
@@ -317,7 +317,7 @@ class Page_TestReplaceSub extends Component {
       <div className = "w3-container">
         <h2 className = " w3-text-red"> Sub: click replaced by main </h2>
         <p>
-          <button className = "w3-button w3-green" onClick = {e => nav.replace('testmain')}> Replace by main</button>
+          <button className = "w3-button w3-green" onClick = {e => nav.navigate('testmain', { reload: true })}> Replace by main</button>
         </p>
       </div>
     );
