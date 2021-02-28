@@ -248,16 +248,16 @@ class Navigator extends Component {
   }
 
   __validateProps(props) {
-    if (this.props.noUrl && !this.props.initialRoute) {
+    if (props.noUrl && !props.initialRoute) {
       throw new Error(`Error: Validate props failed: 'initialRoute' is required when 'noUrl' set to true`);
     }
-    if (this.props.initialRoute && !this.props.routes[this.props.initialRoute]) {
+    if (props.initialRoute && !props.routes[props.initialRoute]) {
       throw new Error(`Error: Validate props failed: 'initialRoute' is not listed in 'routes'`);
     }
-    if (!this.props.noUrl && !this.props.fallbackRoute) {
+    if (!props.noUrl && !props.fallbackRoute) {
       console.warn("Warning: Validate props: Missing 'fallbackRoute'!");
     }
-    if (this.props.fallbackRoute && !this.props.routes[this.props.fallbackRoute]) {
+    if (props.fallbackRoute && !props.routes[props.fallbackRoute]) {
       throw new Error(`Error: Validate props failed: 'fallbackRoute' is not listed in 'routes'`);
     }
   }
