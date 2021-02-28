@@ -156,10 +156,10 @@ class Toast_System extends Component {
 class Page_Home extends Component {
   constructor(props) {
     super(props);
-    this.state = { count: 2 };
+    this.state = { count: 0 };
     props.page.onLoad(e => console.log('# Load Page Home'));
     props.page.onBeforeEnter(e => console.log('# Before Enter Page Home'));
-    props.page.onEnter(e => { console.log('# Enter Page Home'); this.setState({ count: 5 }) });
+    props.page.onEnter(e => { console.log('# Enter Page Home'); this.setState({ count: 2 }) });
     props.page.onLeave(e => console.log('# Leave Page Home'));
   }
   render() {
@@ -188,6 +188,9 @@ class Page_Home extends Component {
         </p>
         <p>
           <button className = "w3-button w3-green" onClick = {e => nav.navigate('testmain')}> Move to Test Page Replace</button>
+        </p>
+        <p>
+          <button className = "w3-button w3-green" onClick = {e => nav.navigate('data', {data: { msg: '--/ Page Data /--'}})}> Move to Page Data</button>
         </p>
       </div>
     );
@@ -263,8 +266,16 @@ class Page_Welcome extends Component {
           {' '}
           <button className = "w3-button w3-blue" onClick = {e => this.props.nav.navigate('landing')}> Move to page Landing </button>
         </p>
+        <p>
+          <button className = "w3-cell w3-mobile w3-button w3-blue" style={{margin: '3px'}} onClick = {e => this.popupInfo()}> Popup Info </button>
+        </p>
       </div>
     );
+  }
+  popupInfo() {
+    this.props.page.popup(Popup_Info)
+    .then(m => console.log(m))
+    .catch(e => console.log(e));
   }
 }
 
@@ -290,7 +301,6 @@ class Page_TestReplaceMain extends Component {
     props.page.onUnload(e => console.log('# Unload Page Test Replace Main'));
   }
   render() {
-    const data = this.props.page.data;
     return (
       <div className = "w3-container">
         <h2 className = " w3-text-red"> Main: click replaced by sub </h2>
@@ -312,7 +322,6 @@ class Page_TestReplaceSub extends Component {
     props.page.onUnload(e => console.log('# Unload Page Test Replace Sub'));
   }
   render() {
-    const data = this.props.page.data;
     return (
       <div className = "w3-container">
         <h2 className = " w3-text-red"> Sub: click replaced by main </h2>
@@ -340,6 +349,25 @@ function Page_Greeting ({ route }) {
   )
 }
 
+class Page_Data extends Component {
+  constructor(props) {
+    super(props);
+    props.page.onLoad(e => console.log('# Load Page Data'));
+    props.page.onBeforeEnter(e => console.log('# Before Enter Page Data'));
+    props.page.onEnter(e => console.log('# Enter Page Data'));
+    props.page.onLeave(e => console.log('# Leave Page Data'));
+    props.page.onUnload(e => console.log('# Unload Page Data'));
+  }
+  render() {
+    const data = this.props.page.data;
+    return (
+      <div className = "w3-container">
+        <h2 className = " w3-text-red"> Page Data is {data.msg} </h2>
+      </div>
+    );
+  }
+}
+
 const routes = {
   home: { Page: Page_Home, url: '/' },
   landing: {url: '/landing', redirect: 'home'},
@@ -348,6 +376,7 @@ const routes = {
   testmain: { Page: Page_TestReplaceMain, url: '/test/main'},
   testsub: { Page: Page_TestReplaceSub, url: '/test/sub'},
   greeting: { Page: Page_Greeting, url: '/greeting/:team', data: () => nav.popup(Popup_GetInput) },
+  data: { Page: Page_Data, url: '/data'},
 };
 
 class Demo extends Component {

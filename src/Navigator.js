@@ -116,11 +116,28 @@ class Navigator extends Component {
     this.__createInjectPage = this.__createInjectPage.bind(this);
     this.__fire = this.__fire.bind(this);
     this.__createPopup = this.__createPopup.bind(this);
+    this.onPopState = this.onPopState.bind(this);
 
     appendStyle();
 
     nav.register(this);
 
+    window.addEventListener('popstate', this.onPopState);
+
+  }
+
+  onPopState() {
+    const url = '/' + href.getPathName();
+    const routeStack = [...this.state.routeStack];
+    const index = routeStack.findIndex(route => route.url === url);
+    if (index !== -1) {
+      const route = routeStack.slice(index, index + 1)[0];
+      routeStack.splice(index, 1);
+      routeStack.unshift(route);
+      this.__fire(routeStack[1].name, routeStack[1].uid, 'leave');
+      this.__fire(routeStack[0].name, routeStack[0].uid, 'beforeEnter');
+      this.setState({ routeStack });
+    }
   }
 
   componentDidMount() {
@@ -133,6 +150,7 @@ class Navigator extends Component {
   componentWillUnmount() {
     nav.destroy();
     this.props.routeHandler && this.props.routeHandler(null);
+    window.removeEventListener('popstate', this.onPopState);
   }
 
   render() {
@@ -278,22 +296,34 @@ class Navigator extends Component {
 
   __initRouteStack() {
     return new Promise((resolve, reject) => {
+      this.__createInitRoute()
+          .then(route => {
+            const routeStack = this.__loadRouteStackFromSessionStorage().filter( _route => !isSameRoute(_route, route.name, route.params));
+            routeStack.unshift(route);
+            resolve(routeStack);
+          })
+          .catch(err => reject(err));
+    });
+  }
+
+  __createInitRoute() {
+    return new Promise((resolve, reject) => {
       const initRouteName = this.__findInitialRouteName();
       const initRoute = this.props.routes[initRouteName];
       const params = this.props.noUrl ? undefined : href.extractUrlParams(initRoute.url);
-      const url = initRoute.url;
+      const url = href.buildUrlPath(initRoute.url, params);
       const uid = createRouteUid(initRouteName, params);
       const page = this.__createInjectPage(initRouteName, uid);
       if (isFunction(initRoute.data)) {
         initRoute.data({ params, props: this.props })
                   .then(data => {
-                    resolve([{name:initRouteName, url, page, params, data, uid}])
+                    resolve({name:initRouteName, url, page, params, data, uid})
                   })
                   .catch(err => reject(err));
       } else {
-        resolve([{name:initRouteName, url, page, params, data: initRoute.data, uid}]);
+        resolve({name:initRouteName, url, page, params, data: initRoute.data, uid});
       }
-    })
+    });
   }
 
   __registerRoutes(routes) {
@@ -367,7 +397,7 @@ class Navigator extends Component {
           this.__fire(this.state.activeRouteName, this.state.routeStack[0].uid, 'leave');
 
           const routeStack = [...this.state.routeStack].filter( route =>  !isSameRoute(route, name, params) );
-          const url = this.__registeredRoutes[name].url;
+          const url = href.buildUrlPath(this.__registeredRoutes[name].url, params);
           const uid = createRouteUid(name, params);
           const page = this.__createInjectPage(name, uid, options);
           routeStack.unshift({ name, url, page, data: routeData, params, uid });
@@ -381,12 +411,14 @@ class Navigator extends Component {
             return
           }
 
-          const path = href.buildUrlPath(this.__registeredRoutes[name].url, options && options.params);
           if (options && options.reload) {
-            href.set(path);
+            href.set(url);
           } else {
-            href.push(path);
+            href.push(url);
           }
+
+          this.__saveRouteStackToSessionStorage();
+
           resolve();
         });
       }
@@ -506,6 +538,29 @@ class Navigator extends Component {
     if (index === -1) { return; }
     toasts[position.toLowerCase()].splice(index, 1);
     this.setState({ toasts });
+  }
+
+  __saveRouteStackToSessionStorage() {
+    const routeStack = this.state.routeStack.map(route => {
+      return {
+        name: route.name,
+        url: route.url,
+        data: route.data,
+        params: route.params,
+        uid: route.uid,
+        pageData: route.page.data || undefined,
+      }
+    });
+    sessionStorage.setItem("__routestack_", JSON.stringify(routeStack));
+  }
+
+  __loadRouteStackFromSessionStorage() {
+    const routeStack = JSON.parse(sessionStorage.getItem("__routestack_")) || [];
+    routeStack.forEach(route => {
+      route.page = this.__createInjectPage(route.name, route.uid, { data: route.pageData });
+      delete route.pageData;
+    });
+    return routeStack;
   }
 
 }
