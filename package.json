@@ -1,6 +1,6 @@
 {
   "name": "@realmjs/react-navi",
-  "version": "2.7.0",
+  "version": "3.0.0",
   "description": "Navigator for react client",
   "main": "dist/index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "url": "https://github.com/realmjs/react-navi/issues"
   },
   "homepage": "https://github.com/realmjs/react-navi#readme",
-  "dependencies": {
+  "peerDependencies": {
     "react": "^16.13.1"
   },
   "devDependencies": {
