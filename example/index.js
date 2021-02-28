@@ -371,12 +371,12 @@ class Page_Data extends Component {
 const routes = {
   home: { Page: Page_Home, url: '/' },
   landing: {url: '/landing', redirect: 'home'},
-  welcome: { Page: Page_Welcome, url: '/welcome/:user', data: {user: '$USER'} },
-  error404: { Page: Page_Error, url: '/error/404', data: {error: 404, message: 'Page not found'} },
-  testmain: { Page: Page_TestReplaceMain, url: '/test/main'},
-  testsub: { Page: Page_TestReplaceSub, url: '/test/sub'},
-  greeting: { Page: Page_Greeting, url: '/greeting/:team', data: () => nav.popup(Popup_GetInput) },
-  data: { Page: Page_Data, url: '/data'},
+  welcome: { Page: Page_Welcome, url: '/welcome/:user', data: {user: '$USER'}, title: 'Welcome' },
+  error404: { Page: Page_Error, url: '/error/404', data: {error: 404, message: 'Page not found', title: "Error" } },
+  testmain: { Page: Page_TestReplaceMain, url: '/test/main', title: "Test Main" },
+  testsub: { Page: Page_TestReplaceSub, url: '/test/sub', title: "Test Sub" },
+  greeting: { Page: Page_Greeting, url: '/greeting/:team', data: () => nav.popup(Popup_GetInput), title: "Greeting"  },
+  data: { Page: Page_Data, url: '/data', title: "Data" },
 };
 
 class Demo extends Component {

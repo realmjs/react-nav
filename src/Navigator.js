@@ -105,8 +105,9 @@ class Navigator extends Component {
     // update url missmatch between route and url
     const route = this.__registeredRoutes[this.state.activeRouteName];
     if (!props.noUrl && route && !href.matchUrlPath(route.url)) {
-      href.push(route.url);
+      href.push(route.url, route.title);
     }
+    document.title = route.title;
 
     this.nav = {
       navigate: this.navigate.bind(this),
@@ -412,9 +413,9 @@ class Navigator extends Component {
           }
 
           if (options && options.reload) {
-            href.set(url);
+            href.set(url, this.__registeredRoutes[name].title);
           } else {
-            href.push(url);
+            href.push(url, this.__registeredRoutes[name].title);
           }
 
           this.__saveRouteStackToSessionStorage();

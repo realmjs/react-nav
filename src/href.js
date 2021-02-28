@@ -10,8 +10,15 @@ export default class Href {
   constructor() {
     this.__handlers = { hashChange: [], popState: [] };
 
+    this.__defaultTitle = document.title;
+
     this.push = (url, title, state) => {
-      history.pushState(state, title, url);
+      history.pushState(state, "", url);
+      if (title) {
+        document.title = title;
+      } else {
+        document.title = this.__defaultTitle
+      }
     };
 
     window.addEventListener('hashchange',(evt) => {
@@ -58,8 +65,9 @@ export default class Href {
     const href = window.location.href.split('#');
     return href[1] || '';
   }
-  set(url) {
+  set(url, title) {
     location.href = url;
+    document.title = title;
   }
   on(event, callback) {
     if (event !== 'hashChange' && event !== 'popState') {
@@ -115,5 +123,8 @@ export default class Href {
       }
     }
     return params;
+  }
+  setDefaultTitle(title) {
+    this.__defaultTitle = title;
   }
 };
