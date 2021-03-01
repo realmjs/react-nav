@@ -9,6 +9,7 @@ export function isFunction(fn) {
 }
 
 export function isSameRoute(route, name, params) {
+  if (!route) { return false; }
   if (route.name !== name) { return false }
   if (route.params === undefined && params === undefined) { return true; }
   if (route.params && params && compareObject(route.params, params) === true) { return true; }

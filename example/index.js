@@ -95,6 +95,8 @@ class Popup_GetInput extends Component {
         </p>
         <p>
           <button className="w3-button w3-blue" onClick={e => this.confirm()}> OK </button>
+          {' '}
+          <button className="w3-button w3-blue" onClick={e => this.cancel()}> Cancel </button>
         </p>
       </div>
     )
@@ -105,6 +107,9 @@ class Popup_GetInput extends Component {
   }
   confirm() {
     this.props.self.resolve(this.state.value);
+  }
+  cancel() {
+    this.props.self.reject();
   }
 }
 
@@ -372,10 +377,10 @@ const routes = {
   home: { Page: Page_Home, url: '/' },
   landing: {url: '/landing', redirect: 'home'},
   welcome: { Page: Page_Welcome, url: '/welcome/:user', data: {user: '$USER'}, title: 'Welcome' },
-  error404: { Page: Page_Error, url: '/error/404', data: {error: 404, message: 'Page not found', title: "Error" } },
+  error404: { Page: Page_Error, url: '/error/404', data: {error: 404, message: 'Page not found'}, title: "Error" },
   testmain: { Page: Page_TestReplaceMain, url: '/test/main', title: "Test Main" },
   testsub: { Page: Page_TestReplaceSub, url: '/test/sub', title: "Test Sub" },
-  greeting: { Page: Page_Greeting, url: '/greeting/:team', data: () => nav.popup(Popup_GetInput), title: "Greeting"  },
+  greeting: { Page: Page_Greeting, url: '/greeting/:team', data: () => nav.popup(Popup_GetInput), reject: ({nav}) => nav.navigate('error404'), title: "Greeting"  },
   data: { Page: Page_Data, url: '/data', title: "Data" },
 };
 

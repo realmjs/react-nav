@@ -107,7 +107,10 @@ class Navigator extends Component {
     if (!props.noUrl && route && !href.matchUrlPath(route.url)) {
       href.push(route.url, route.title);
     }
-    document.title = route.title;
+
+    if (route && route.title) {
+      document.title = route.title;
+    }
 
     this.nav = {
       navigate: this.navigate.bind(this),
@@ -318,9 +321,13 @@ class Navigator extends Component {
       if (isFunction(initRoute.data)) {
         initRoute.data({ params, props: this.props })
                   .then(data => {
-                    resolve({name:initRouteName, url, page, params, data, uid})
+                    initRoute.resolve && initRoute.resolve(data);
+                    resolve({name:initRouteName, url, page, params, data, uid});
                   })
-                  .catch(err => reject(err));
+                  .catch(err => {
+                    initRoute.reject && initRoute.reject({ err, nav: this.nav });
+                    reject(err);
+                  });
       } else {
         resolve({name:initRouteName, url, page, params, data: initRoute.data, uid});
       }
@@ -381,12 +388,19 @@ class Navigator extends Component {
         return
       }
 
-      if (isFunction(this.__registeredRoutes[name].data)) {
-        return this.__registeredRoutes[name].data({ params: options && options.params || undefined, props: this.props })
-                                            .then(changeRoute.bind(this))
-                                            .catch(err => reject(err));
+      const route = this.__registeredRoutes[name];
+      if (isFunction(route.data)) {
+        return route.data({ params, props: this.props })
+                    .then(data => {
+                      route.resolve && route.resolve(data);
+                      changeRoute.bind(this)(data);
+                    })
+                    .catch(err => {
+                      route.reject && route.reject({ err, nav: this.nav });
+                      reject(err);
+                    });
       } else {
-        return changeRoute.bind(this)();
+        return changeRoute.bind(this)(route.data);
       }
 
       function changeRoute(routeData) {
@@ -395,7 +409,7 @@ class Navigator extends Component {
             name = this.__registeredRoutes[name].redirect;
           }
 
-          this.__fire(this.state.activeRouteName, this.state.routeStack[0].uid, 'leave');
+          this.state.routeStack[0] && this.__fire(this.state.activeRouteName, this.state.routeStack[0].uid, 'leave');
 
           const routeStack = [...this.state.routeStack].filter( route =>  !isSameRoute(route, name, params) );
           const url = href.buildUrlPath(this.__registeredRoutes[name].url, params);
