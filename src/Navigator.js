@@ -121,6 +121,7 @@ class Navigator extends Component {
     this.__fire = this.__fire.bind(this);
     this.__createPopup = this.__createPopup.bind(this);
     this.onPopState = this.onPopState.bind(this);
+    this.handleClickOnModal = this.handleClickOnModal.bind(this);
 
     appendStyle();
 
@@ -184,7 +185,7 @@ class Navigator extends Component {
                     this.__popupStack[name] && this.__popupStack[name].map( (popup, index) => {
                       if (popup.self.overlay) {
                         return (
-                          <div key={index} className="rjs-react-nav-modal" style={{display: 'block'}}>
+                          <div key={index} className="rjs-react-nav-modal" style={{display: 'block'}} onClick = {e => this.handleClickOnModal(popup.self)}>
                              { React.createElement(popup.Popup, { self: popup.self, ...this.props, page }) }
                           </div>
                         )
@@ -208,7 +209,7 @@ class Navigator extends Component {
             this.__popupStack.__global && this.__popupStack.__global.map( (popup, index) => {
               if (popup.self.overlay) {
                 return (
-                  <div key={index} className="rjs-react-nav-modal" style={{display: 'block'}}>
+                  <div key={index} className="rjs-react-nav-modal" style={{display: 'block'}} onClick = {e => this.handleClickOnModal(popup.self)}>
                       { React.createElement(popup.Popup, { self: popup.self, ...this.props, page: this.__global }) }
                   </div>
                 )
@@ -576,6 +577,10 @@ class Navigator extends Component {
       delete route.pageData;
     });
     return routeStack;
+  }
+
+  handleClickOnModal(self) {
+    self.onClickOverlay && self.onClickOverlay(self);
   }
 
 }
