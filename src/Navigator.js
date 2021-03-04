@@ -186,7 +186,7 @@ class Navigator extends Component {
                       if (popup.self.overlay) {
                         return (
                           <div key={index} className="rjs-react-nav-modal" style={{display: 'block'}} onClick = {e => this.handleClickOnModal(popup.self)}>
-                             { React.createElement(popup.Popup, { self: popup.self, ...this.props, page }) }
+                            <div onClick = {e => e.stopPropagation()}> { React.createElement(popup.Popup, { self: popup.self, ...this.props, page }) } </div>
                           </div>
                         )
                       } else {
@@ -210,7 +210,7 @@ class Navigator extends Component {
               if (popup.self.overlay) {
                 return (
                   <div key={index} className="rjs-react-nav-modal" style={{display: 'block'}} onClick = {e => this.handleClickOnModal(popup.self)}>
-                      { React.createElement(popup.Popup, { self: popup.self, ...this.props, page: this.__global }) }
+                    <div onClick = {e => e.stopPropagation()}> { React.createElement(popup.Popup, { self: popup.self, ...this.props, page: this.__global }) } </div>
                   </div>
                 )
               } else {
