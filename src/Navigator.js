@@ -8,6 +8,9 @@ import { capitalize, isFunction, isSameRoute, createRouteUid } from './util'
 import animation from './animation'
 import { appendStyle } from './style'
 
+import BodyScroll from './body-scroll';
+const bodyScroll = BodyScroll();
+
 const href = new Href();
 
 class Page extends Component {
@@ -459,6 +462,7 @@ class Navigator extends Component {
       const showPopup = {...this.state.showPopup};
       showPopup[scope] = true;
       this.setState({ showPopup });
+      bodyScroll.disable();
       cb && cb({ resolve: self.resolve, reject: self.reject });
     });
   }
@@ -472,6 +476,7 @@ class Navigator extends Component {
       showPopup[scope] = this.__popupStack[scope].length == 0 ? false : true;
       this.setState({ showPopup });
       resolve && resolve(data);
+      bodyScroll.enable();
     }
   }
 
@@ -484,6 +489,7 @@ class Navigator extends Component {
       showPopup[scope] = this.__popupStack[scope].length == 0 ? false : true;
       this.setState({ showPopup });
       reject && reject(error);
+      bodyScroll.enable();
     }
   }
 
