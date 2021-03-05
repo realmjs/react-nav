@@ -45,7 +45,7 @@ export function makeTitle(str, params, data) {
   });
 
   data && parsePatternsFromTitle(str, 'data').forEach(p => {
-    title = title.replace(new RegExp(`{{${p}}}`), data[p]);
+    title = title.replace(new RegExp(`{{${p}}}`), getData(data, p));
   });
 
   return title;
@@ -53,6 +53,13 @@ export function makeTitle(str, params, data) {
 }
 
 function parsePatternsFromTitle(title, by) {
-  const patterns = (by === 'param')? title.match(/\{:(\w+)\}/g) : title.match(/\{\{(\w+)\}\}/g);
+  const patterns = (by === 'param')? title.match(/\{:(\w+)\}/g) : title.match(/\{\{(.+)\}\}/g);
   return patterns? patterns.map(p => p.replace(/\{|:|\}/g,'')) : [];
+}
+
+function getData(data, pattern) {
+  const keys = pattern.split('.');
+  const value = data[keys[0]];
+  if (keys.length === 1) { return value; }
+  return getData(value, pattern.replace(/^\w*\./,''));
 }
