@@ -32,3 +32,27 @@ export function createRouteUid(name, params) {
   }
   return uid;
 }
+
+export function makeTitle(str, params, data) {
+
+  if (!str) { return undefined; }
+  if (!params && !data) { return str; }
+
+  let title = str;
+
+  params && parsePatternsFromTitle(str, 'param').forEach(p => {
+    title = title.replace(new RegExp(`{:${p}}`), params[p]);
+  });
+
+  data && parsePatternsFromTitle(str, 'data').forEach(p => {
+    title = title.replace(new RegExp(`{{${p}}}`), data[p]);
+  });
+
+  return title;
+
+}
+
+function parsePatternsFromTitle(title, by) {
+  const patterns = (by === 'param')? title.match(/\{:(\w+)\}/g) : title.match(/\{\{(\w+)\}\}/g);
+  return patterns? patterns.map(p => p.replace(/\{|:|\}/g,'')) : [];
+}

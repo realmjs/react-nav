@@ -4,7 +4,7 @@ import React, { Component } from 'react'
 
 import nav from './nav'
 import Href from './href'
-import { capitalize, isFunction, isSameRoute, createRouteUid } from './util'
+import { capitalize, isFunction, isSameRoute, createRouteUid, makeTitle } from './util'
 import animation from './animation'
 import { appendStyle } from './style'
 
@@ -108,11 +108,7 @@ class Navigator extends Component {
     // update url missmatch between route and url
     const route = this.__registeredRoutes[this.state.activeRouteName];
     if (!props.noUrl && route && !href.matchUrlPath(route.url)) {
-      href.push(route.url, route.title);
-    }
-
-    if (route && route.title) {
-      document.title = route.title;
+      href.push(route.url);
     }
 
     this.nav = {
@@ -151,6 +147,8 @@ class Navigator extends Component {
   componentDidMount() {
     this.__initRouteStack().then(routeStack => {
       const activeRouteName = routeStack[0].name;
+      const title = makeTitle(this.__registeredRoutes[activeRouteName].title, routeStack[0].params, routeStack[0].data);
+      if (title) { document.title = title; }
       this.setState({ routeStack, activeRouteName });
     });
   }
@@ -433,10 +431,12 @@ class Navigator extends Component {
             return
           }
 
+          const title = makeTitle(this.__registeredRoutes[name].title, params, routeData);
+
           if (options && options.reload) {
-            href.set(url, this.__registeredRoutes[name].title);
+            href.set(url, title);
           } else {
-            href.push(url, this.__registeredRoutes[name].title);
+            href.push(url, title);
           }
 
           this.__saveRouteStackToSessionStorage();

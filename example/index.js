@@ -106,7 +106,7 @@ class Popup_GetInput extends Component {
     this.setState({ value });
   }
   confirm() {
-    this.props.self.resolve(this.state.value);
+    this.props.self.resolve({name: this.state.value});
   }
   cancel() {
     this.props.self.reject();
@@ -341,7 +341,7 @@ class Page_TestReplaceSub extends Component {
 function Page_Greeting ({ route }) {
 
   const team = route.params.team;
-  const name = route.data;
+  const name = route.data.name;
 
   return (
     <div className = "w3-container">
@@ -376,11 +376,11 @@ class Page_Data extends Component {
 const routes = {
   home: { Page: Page_Home, url: '/' },
   landing: {url: '/landing', redirect: 'home'},
-  welcome: { Page: Page_Welcome, url: '/welcome/:user', data: {user: '$USER'}, title: 'Welcome' },
+  welcome: { Page: Page_Welcome, url: '/welcome/:user', data: {user: '$USER'}, title: 'Welcome: {:user}' },
   error404: { Page: Page_Error, url: '/error/404', data: {error: 404, message: 'Page not found'}, title: "Error" },
   testmain: { Page: Page_TestReplaceMain, url: '/test/main', title: "Test Main" },
   testsub: { Page: Page_TestReplaceSub, url: '/test/sub', title: "Test Sub" },
-  greeting: { Page: Page_Greeting, url: '/greeting/:team', data: () => nav.popup(Popup_GetInput), reject: ({nav}) => nav.navigate('error404'), title: "Greeting"  },
+  greeting: { Page: Page_Greeting, url: '/greeting/:team', data: () => nav.popup(Popup_GetInput), reject: ({nav}) => nav.navigate('error404'), title: "Greeting {{name}} of {:team}"  },
   data: { Page: Page_Data, url: '/data', title: "Data" },
 };
 
