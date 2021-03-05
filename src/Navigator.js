@@ -326,6 +326,7 @@ class Navigator extends Component {
         initRoute.data({ params, props: this.props })
                   .then(data => {
                     initRoute.resolve && initRoute.resolve(data);
+                    this.props.onChangeRoute && this.props.onChangeRoute({ name: initRouteName, url, params, data, options: initRoute.options });
                     resolve({name:initRouteName, url, page, params, data, uid});
                   })
                   .catch(err => {
@@ -333,6 +334,7 @@ class Navigator extends Component {
                     reject(err);
                   });
       } else {
+        this.props.onChangeRoute && this.props.onChangeRoute({ name: initRouteName, url, params, data: initRoute.data, options: initRoute.options });
         resolve({name:initRouteName, url, page, params, data: initRoute.data, uid});
       }
     });
@@ -426,6 +428,7 @@ class Navigator extends Component {
           this.__fire(activeRouteName, uid, 'beforeEnter');
           this.setState({ routeStack, activeRouteName });
           if ( this.props.noUrl || (options && options.noUpdateUrl) || !this.__registeredRoutes[name].url) {
+            this.props.onChangeRoute && this.props.onChangeRoute({ name, url, params, data: routeData, options: this.__registeredRoutes[name].options });
             resolve();
             return
           }
@@ -438,6 +441,7 @@ class Navigator extends Component {
 
           this.__saveRouteStackToSessionStorage();
 
+          this.props.onChangeRoute && this.props.onChangeRoute({ name, url, params, data: routeData, options: this.__registeredRoutes[name].options });
           resolve();
         });
       }

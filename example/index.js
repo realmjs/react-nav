@@ -387,13 +387,13 @@ const routes = {
 class Demo extends Component {
   constructor(props) {
     super(props);
-    this.state = { ui: 1 };
+    this.state = { ui: 1, headerVisible: true };
     this.route = null;
   }
   render() {
     return (
       <div className="w3-container">
-        <div className = "w3-bar w3-border-bottom w3-padding">
+        <div className = "w3-bar w3-border-bottom w3-padding" style = {{ display: this.state.headerVisible? 'block' : 'none' }}>
           <button className = "w3-bar-item w3-button w3-text-blue" onClick = {e => this.navToHome()}> Home </button>
           <button className = "w3-bar-item w3-button w3-text-green" onClick = {e => this.route.navigate('welcome', {params: {user: 'Bar'}})}> Welcome </button>
           <button className = "w3-bar-item w3-button w3-text-green" onClick = {e => this.route.navigate('greeting', {params: {team: 'test'}})}> Greeting </button>
@@ -411,6 +411,7 @@ class Demo extends Component {
                         initialRoute = 'home'
                         fallbackRoute = 'error404'
                         routeHandler = { routeHandler => this.route = routeHandler }
+                        onChangeRoute = { route => /^\/error\//.test(route.url)? this.setState({ headerVisible: false}) : this.setState({ headerVisible: true}) }
                         {...this.props}
                         noUrl = {false}
             />
