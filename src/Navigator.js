@@ -170,6 +170,7 @@ class Navigator extends Component {
               url,
               data,
               params,
+              isActive: index === 0,
             };
             const PageComponent = this.__registeredRoutes[name].Page;
             return (
