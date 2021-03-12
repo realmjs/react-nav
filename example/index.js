@@ -412,6 +412,7 @@ class Demo extends Component {
                         fallbackRoute = 'error404'
                         routeHandler = { routeHandler => this.route = routeHandler }
                         onChangeRoute = { route => /^\/error\//.test(route.url)? this.setState({ headerVisible: false}) : this.setState({ headerVisible: true}) }
+                        onPageRendered = { route => console.log('Rendered page for route ' + route.url) }
                         {...this.props}
                         noUrl = {false}
             />

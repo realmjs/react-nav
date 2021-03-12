@@ -19,6 +19,7 @@ class Page extends Component {
   }
   componentDidMount() {
     this.props.fire('load');
+    this.props.onPageRendered && this.props.onPageRendered(this.props.route);
     if (this.props.active) {
       this.props.fire('enter');
     }
@@ -176,7 +177,7 @@ class Navigator extends Component {
             return (
               <div key = {uid} style={{ display }}>
                 {/* Page */}
-                <Page fire = { e => this.__fire(name, uid, e) } active = {index === 0} >
+                <Page fire = { e => this.__fire(name, uid, e) } active = {index === 0} onPageRendered = {this.props.onPageRendered} route = {passingRouteObj}>
                   {
                     React.createElement(PageComponent, { route: passingRouteObj, nav: this.nav, page, ...this.props })
                   }
