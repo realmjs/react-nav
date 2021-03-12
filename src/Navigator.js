@@ -22,11 +22,13 @@ class Page extends Component {
     this.props.onPageRendered && this.props.onPageRendered(this.props.route);
     if (this.props.active) {
       this.props.fire('enter');
+      this.props.onEnterPage && this.props.onEnterPage(this.props.route);
     }
   }
   componentDidUpdate(prevProps) {
     if (this.props.active && !prevProps.active) {
       this.props.fire('enter');
+      this.props.onEnterPage && this.props.onEnterPage(this.props.route);
     }
   }
   render() {
@@ -177,7 +179,7 @@ class Navigator extends Component {
             return (
               <div key = {uid} style={{ display }}>
                 {/* Page */}
-                <Page fire = { e => this.__fire(name, uid, e) } active = {index === 0} onPageRendered = {this.props.onPageRendered} route = {passingRouteObj}>
+                <Page fire = { e => this.__fire(name, uid, e) } active = {index === 0} onPageRendered = {this.props.onPageRendered} onEnterPage = {this.props.onEnterPage} route = {passingRouteObj}>
                   {
                     React.createElement(PageComponent, { route: passingRouteObj, nav: this.nav, page, ...this.props })
                   }

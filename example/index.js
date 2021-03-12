@@ -413,6 +413,7 @@ class Demo extends Component {
                         routeHandler = { routeHandler => this.route = routeHandler }
                         onChangeRoute = { route => /^\/error\//.test(route.url)? this.setState({ headerVisible: false}) : this.setState({ headerVisible: true}) }
                         onPageRendered = { route => console.log('Rendered page for route ' + route.url) }
+                        onEnterPage = { route => console.log('Enter page for route ' + route.url) }
                         {...this.props}
                         noUrl = {false}
             />
