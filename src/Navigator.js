@@ -468,9 +468,9 @@ class Navigator extends Component {
       }
       this.__popupStack[scope].push({ Popup: PopupComponent, self, resolve, reject });
       const showPopup = {...this.state.showPopup};
+      !showPopup[scope] && bodyScroll.disable();
       showPopup[scope] = true;
       this.setState({ showPopup });
-      bodyScroll.disable();
       cb && cb({ resolve: self.resolve, reject: self.reject });
     });
   }
@@ -484,7 +484,7 @@ class Navigator extends Component {
       showPopup[scope] = this.__popupStack[scope].length == 0 ? false : true;
       this.setState({ showPopup });
       resolve && resolve(data);
-      bodyScroll.enable();
+      showPopup[scope] === false && bodyScroll.enable();
     }
   }
 
@@ -497,7 +497,7 @@ class Navigator extends Component {
       showPopup[scope] = this.__popupStack[scope].length == 0 ? false : true;
       this.setState({ showPopup });
       reject && reject(error);
-      bodyScroll.enable();
+      showPopup[scope] === false && bodyScroll.enable();
     }
   }
 
