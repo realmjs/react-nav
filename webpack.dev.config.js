@@ -10,10 +10,11 @@ module.exports = {
       filename: "app.bundle.js",
       publicPath: "/assets/",
     },
+    resolve: { extensions: ['.js', '.jsx'] },
     module: {
       rules: [
         {
-          test: /\.js?$/,
+          test: /(\.js?$|\.jsx?$)/,
           use: 'babel-loader',
           exclude: /node_modules/
         }
