@@ -4,7 +4,7 @@ const path = require("path")
 
 module.exports = {
     entry: {
-      dev: ["./example/index.js"]
+      dev: ["./demo/index.js"]
     },
     output: {
       filename: "app.bundle.js",
@@ -23,8 +23,11 @@ module.exports = {
     mode: 'development',
     devtool: 'inline-source-map',
     devServer: {
-      contentBase: path.join(__dirname, 'example'),
+      contentBase: path.join(__dirname, 'demo'),
       publicPath: "/assets/",
-      historyApiFallback: true
+      historyApiFallback: true,
+      watchOptions: {
+        poll: true,
+      },
     }
 }
