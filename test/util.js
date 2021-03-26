@@ -2,14 +2,13 @@
 
 let __location;
 
-export function mockLocationHref(url) {
-  const mockLocation = new URL(url);
+export function mockLocation(loc) {
   __location = window.location;
   delete window.location;
-  window.location = mockLocation;
+  window.location = loc;
 }
 
-export function clearMockLocationHref() {
+export function clearMockLocation() {
   jest.clearAllMocks();
   window.location = __location;
 }

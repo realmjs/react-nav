@@ -2,7 +2,7 @@
 
 import route from '../src/route.util';
 
-import { mockLocationHref, clearMockLocationHref } from './util';
+import { mockLocation, clearMockLocation } from './util';
 
 test("extract url information from location href", () => {
 
@@ -17,12 +17,12 @@ test("extract url information from location href", () => {
 
 test("set new href", () => {
 
-  mockLocationHref('http://localhost:3000');
+  mockLocation(new URL('http://localhost:3000'));
 
   route.href.set('http://localhost:3100');
   expect( route.href() ).toBe('http://localhost:3100/');
 
-  clearMockLocationHref();
+  clearMockLocation();
 
 });
 
@@ -38,7 +38,7 @@ test("push new path into history", () => {
 
 test("matching a pattern with current href", () => {
 
-  mockLocationHref('http://localhost:3000/test/s1/t1/');
+  mockLocation(new URL('http://localhost:3000/test/s1/t1/'));
 
   expect( route.match("/test/s1/t1").isMatched ).toBe(true);
   expect( route.match("/test/:s/:t").isMatched ).toBe(true);
@@ -53,6 +53,6 @@ test("matching a pattern with current href", () => {
   const matcher = route.match("/test/:s/:t");
   expect(matcher.params).toEqual({ s: 's1', t: 't1' });
 
-  clearMockLocationHref();
+  clearMockLocation();
 
 });
