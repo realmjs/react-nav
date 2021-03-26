@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 
+import routeUtil from './route.util';
+
 export default function Navigator(props) {
 
-  const { routes, initialRoute } = props;
+  const { routes, initialRoute, fallback } = props;
 
   // validateRoutes();
 
@@ -27,10 +29,16 @@ export default function Navigator(props) {
   );
 
   function createInitialRouteStack() {
-    if (initialRoute) {
-      return [{ name: initialRoute, ...routes[initialRoute] }]
+    if (window.location) {
+      const name = Object.keys(routes).find(name => routeUtil.match(routes[name].path).isMatched) || fallback;
+      return [{ name, ...routes[name] }];
     } else {
-      return [];
+      let name = initialRoute;
+      if (Object.keys(routes).indexOf(name) === -1) {
+        console.error("initialRoute is not defined in routes object");
+        name = fallback;
+      }
+      return [{ name, ...routes[name] }];
     }
   }
 
@@ -45,4 +53,5 @@ function validateRoutes(props) {
   const { routes }= props;
   if ( !routes ) return new Error("Invalid routes definition");
   if ( !Object.keys(routes).every(name => routes[name].Page) ) return new Error("Invalid routes definition");
+  if ( window.location && !Object.keys(routes).every(name => routes[name].path) ) return new Error("Invalid routes definition");
 }

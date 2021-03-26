@@ -9,6 +9,5 @@ export function mockLocation(loc) {
 }
 
 export function clearMockLocation() {
-  jest.clearAllMocks();
   window.location = __location;
 }
