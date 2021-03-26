@@ -2,7 +2,7 @@
 
 import route from '../src/route.util';
 
-let __location;
+import { mockLocationHref, clearMockLocationHref } from './util';
 
 test("extract url information from location href", () => {
 
@@ -56,17 +56,3 @@ test("matching a pattern with current href", () => {
   clearMockLocationHref();
 
 });
-
-
-
-function mockLocationHref(url) {
-  const mockLocation = new URL(url);
-  __location = window.location;
-  delete window.location;
-  window.location = mockLocation;
-}
-
-function clearMockLocationHref() {
-  jest.clearAllMocks();
-  window.location = __location;
-}
