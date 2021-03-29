@@ -1,15 +1,18 @@
 "use strict"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import routeUtil from './route.util';
 import env from './env.util';
+import storage from './storage.util';
 
 export default function Navigator(props) {
 
   const { routes, initialRoute, fallback } = props;
 
   const [routeStack, setRouteStack] = useState( createInitialRouteStack() );
+
+  useEffect(() => storage.set(routeStack), [routeStack]);
 
   return (
     <div data-testid = "navigator">

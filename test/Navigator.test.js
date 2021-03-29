@@ -26,10 +26,12 @@ import Navigator from '../src/Navigator';
 
 const Home = () => (<h2>Home</h2>);
 const About = () => (<h2>About</h2>);
+const Contact = () => (<h2>Contact</h2>);
 const Error404 = () => (<h2>404</h2>);
 const routes = {
   'home': { Page: Home, path: '/' },
   'about': { Page: About, path: '/about' },
+  'contact': { Page: Contact, path: '/contact' },
   "404": { Page: Error404, path: '/error/404'}
 };
 
@@ -95,6 +97,7 @@ test("Navigator render fallback route if href does not match", () => {
   });
 
   expect(container.textContent).toBe("404");
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: '404', path: routes['404'].path }]);
 
   clearMockLocation();
 
@@ -110,6 +113,7 @@ test("Navigator render fallback if initialRoute and window.location are both und
   });
 
   expect(container.textContent).toBe("404");
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: '404', path: routes['404'].path }]);
 
   clearMockLocation();
 
@@ -121,10 +125,11 @@ test("Navigator render the initial route when window.location is undefined", () 
   mockLocation(undefined);
 
   act(() => {
-    render(<Navigator routes = {routes} initialRoute = 'about' />, container);
+    render(<Navigator routes = {routes} initialRoute = 'about' routeStackName = '__routestack_' />, container);
   });
 
   expect(container.textContent).toBe("About");
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: 'about', path: routes['about'].path }]);
 
   clearMockLocation();
 
@@ -136,10 +141,11 @@ test("Navigator render the route corresponding to href", () => {
   mockLocation(new URL ('http://localhost:3000/about'));
 
   act(() => {
-    render(<Navigator routes = {routes} />, container);
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' />, container);
   });
 
   expect(container.textContent).toBe("About");
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: 'about', path: routes['about'].path }]);
 
   clearMockLocation();
 
