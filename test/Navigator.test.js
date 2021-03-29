@@ -86,6 +86,36 @@ test("Navigator alert an error if fallback is not defined in the routes", () => 
 });
 
 
+test("Navigator render fallback route if href does not match", () => {
+
+  mockLocation(new URL ('http://localhost:3000/notexist'));
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' />, container);
+  });
+
+  expect(container.textContent).toBe("404");
+
+  clearMockLocation();
+
+});
+
+
+test("Navigator render fallback if initialRoute and window.location are both undefined", () => {
+
+  mockLocation(undefined);
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' />, container);
+  });
+
+  expect(container.textContent).toBe("404");
+
+  clearMockLocation();
+
+});
+
+
 test("Navigator render the initial route when window.location is undefined", () => {
 
   mockLocation(undefined);
@@ -115,32 +145,3 @@ test("Navigator render the route corresponding to href", () => {
 
 });
 
-
-test("Navigator render fallback route if href does not match", () => {
-
-  mockLocation(new URL ('http://localhost:3000/notexist'));
-
-  act(() => {
-    render(<Navigator routes = {routes} fallback = '404' />, container);
-  });
-
-  expect(container.textContent).toBe("404");
-
-  clearMockLocation();
-
-});
-
-
-test("Navigator render fallback if initialRoute and window.location are both undefined", () => {
-
-  mockLocation(undefined);
-
-  act(() => {
-    render(<Navigator routes = {routes} fallback = '404' />, container);
-  });
-
-  expect(container.textContent).toBe("404");
-
-  clearMockLocation();
-
-});
