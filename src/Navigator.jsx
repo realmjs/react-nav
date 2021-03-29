@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 
 import routeUtil from './route.util';
+import env from './env.util';
 
 export default function Navigator(props) {
 
@@ -27,8 +28,8 @@ export default function Navigator(props) {
   );
 
   function createInitialRouteStack() {
-    if ( window.location && !Object.keys(routes).every(name => routes[name].path) ) return [];
-    const name = window.location?
+    if ( env.isWeb() && !Object.keys(routes).every(name => routes[name].path) ) return [];
+    const name = env.isWeb()?
                   Object.keys(routes).find(name => routeUtil.match(routes[name].path).isMatched) || fallback
                 :
                   initialRoute || fallback;
@@ -45,7 +46,7 @@ function validateRoutes(props) {
   const { routes }= props;
   if ( !routes ) return new Error("Invalid routes definition");
   if ( !Object.keys(routes).every(name => routes[name].Page) ) return new Error("Invalid routes definition");
-  if ( window.location && !Object.keys(routes).every(name => routes[name].path) ) return new Error("Invalid routes definition");
+  if ( env.isWeb() && !Object.keys(routes).every(name => routes[name].path) ) return new Error("Invalid routes definition");
   if ( props.initialRoute && Object.keys(routes).indexOf(props.initialRoute) === -1 ) return new Error("initialRoute is not defined in routes object");
   if ( props.fallback && Object.keys(routes).indexOf(props.fallback) === -1 ) return new Error("fallback is not defined in routes object");
   return null;
