@@ -34,31 +34,59 @@ const routes = {
 };
 
 
-test("Validating routes should throw errors, in case of window.location is undefined", () => {
+test("Navigator alert an error if missing Page in route definition", async () => {
 
   const spy = jest.spyOn(console, 'error').mockImplementation();
 
-  mockLocation(undefined);
-
   const routes = {
-    'home': {},
+    'home': { path: '/' },
   };
 
   act(() => {
-    render(<Navigator routes = {routes} initialRoute = 'home' />, container);
+    render(<Navigator routes = {routes} />, container);
   });
 
   expect(spy).toHaveBeenCalled();
   expect(spy.mock.calls[0][2]).toEqual("Invalid routes definition");
-
-  clearMockLocation();
 
   spy.mockRestore();
 
 });
 
 
-test("Navigator render the initial route, window.location must be undefined", () => {
+test("Navigator alert an error if initialRoute does not in the routes", () => {
+
+  const spy = jest.spyOn(console, 'error').mockImplementation();
+
+  act(() => {
+    render(<Navigator routes = {routes} initialRoute = 'notexist' fallback = '404' />, container);
+  });
+
+  expect(spy).toHaveBeenCalled();
+  expect(spy.mock.calls[0][2]).toEqual("initialRoute is not defined in routes object");
+
+  spy.mockRestore();
+
+});
+
+
+test("Navigator alert an error if fallback is not defined in the routes", () => {
+
+  const spy = jest.spyOn(console, 'error').mockImplementation();
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = 'notexist' />, container);
+  });
+
+  expect(spy).toHaveBeenCalled();
+  expect(spy.mock.calls[0][2]).toEqual("fallback is not defined in routes object");
+
+  spy.mockRestore();
+
+});
+
+
+test("Navigator render the initial route when window.location is undefined", () => {
 
   mockLocation(undefined);
 
@@ -100,28 +128,19 @@ test("Navigator render fallback route if href does not match", () => {
 
   clearMockLocation();
 
-})
+});
 
-test("Navigator render fallback route in routes object and message an error", () => {
+
+test("Navigator render fallback if initialRoute and window.location are both undefined", () => {
 
   mockLocation(undefined);
 
-  const spy = jest.spyOn(console, 'error').mockImplementation();
-
   act(() => {
-    render(<Navigator routes = {routes} initialRoute = 'notexist' fallback = '404' />, container);
+    render(<Navigator routes = {routes} fallback = '404' />, container);
   });
 
   expect(container.textContent).toBe("404");
 
-  expect(spy).toHaveBeenCalled();
-  expect(spy.mock.calls[0][0]).toEqual("initialRoute is not defined in routes object");
-
-  spy.mockRestore();
-
   clearMockLocation();
 
 });
-
-// render nothing and message an error if fallback is not in routes
-// href/initialRoute --> fallback --> render null

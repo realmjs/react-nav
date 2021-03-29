@@ -8,8 +8,6 @@ export default function Navigator(props) {
 
   const { routes, initialRoute, fallback } = props;
 
-  // validateRoutes();
-
   const [routeStack, setRouteStack] = useState( createInitialRouteStack() );
 
   return (
@@ -29,19 +27,13 @@ export default function Navigator(props) {
   );
 
   function createInitialRouteStack() {
-    if (window.location) {
-      const name = Object.keys(routes).find(name => routeUtil.match(routes[name].path).isMatched) || fallback;
-      return [{ name, ...routes[name] }];
-    } else {
-      let name = initialRoute;
-      if (Object.keys(routes).indexOf(name) === -1) {
-        console.error("initialRoute is not defined in routes object");
-        name = fallback;
-      }
-      return [{ name, ...routes[name] }];
-    }
+    if ( window.location && !Object.keys(routes).every(name => routes[name].path) ) return [];
+    const name = window.location?
+                  Object.keys(routes).find(name => routeUtil.match(routes[name].path).isMatched) || fallback
+                :
+                  initialRoute || fallback;
+    return [{ name, ...routes[name] }];
   }
-
 
 }
 
@@ -54,4 +46,7 @@ function validateRoutes(props) {
   if ( !routes ) return new Error("Invalid routes definition");
   if ( !Object.keys(routes).every(name => routes[name].Page) ) return new Error("Invalid routes definition");
   if ( window.location && !Object.keys(routes).every(name => routes[name].path) ) return new Error("Invalid routes definition");
+  if ( props.initialRoute && Object.keys(routes).indexOf(props.initialRoute) === -1 ) return new Error("initialRoute is not defined in routes object");
+  if ( props.fallback && Object.keys(routes).indexOf(props.fallback) === -1 ) return new Error("fallback is not defined in routes object");
+  return null;
 }
