@@ -12,7 +12,8 @@ export default function Navigator(props) {
 
   const [routeStack, setRouteStack] = useState( createInitialRouteStack() );
 
-  useEffect(() => storage.set(routeStack), [routeStack]);
+  useEffect(() => storage.set(exportRouteStack()), [routeStack]);
+  useEffect(() => props.onRouteStackChange && props.onRouteStackChange(exportRouteStack()), [routeStack]);
 
   return (
     <div data-testid = "navigator">
@@ -37,6 +38,13 @@ export default function Navigator(props) {
                 :
                   initialRoute || fallback;
     return [{ name, ...routes[name] }];
+  }
+
+  function exportRouteStack() {
+    return routeStack.map(route => {
+      const {Page, ...rest} = route;
+      return rest;
+    });
   }
 
 }

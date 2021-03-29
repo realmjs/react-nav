@@ -151,3 +151,18 @@ test("Navigator render the route corresponding to href", () => {
 
 });
 
+
+test("Navigator notify via props.onRouteStackChange when routeStack is changed", () => {
+
+  const mockEvent = jest.fn();
+
+  mockLocation(new URL ('http://localhost:3000/about'));
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
+  });
+
+  expect(mockEvent).toHaveBeenCalled();
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }]);
+
+});
