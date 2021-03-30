@@ -20,6 +20,7 @@ afterEach(() => {
   unmountComponentAtNode(container);
   container.remove();
   container = null;
+  sessionStorage.clear();
 });
 
 import Navigator from '../src/Navigator';
@@ -164,5 +165,23 @@ test("Navigator notify via props.onRouteStackChange when routeStack is changed",
 
   expect(mockEvent).toHaveBeenCalled();
   expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }]);
+
+});
+
+
+test("Navigator import routeStack from sessionStorage at initial load", () => {
+
+  const mockEvent = jest.fn();
+
+  mockLocation(new URL ('http://localhost:3000/about'));
+
+  sessionStorage.setItem('__routestack_', JSON.stringify([ { name: 'home', path: routes['home'].path } ]));
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
+  });
+
+  expect(mockEvent).toHaveBeenCalled();
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }, { name: 'home', path: routes['home'].path }]);
 
 });

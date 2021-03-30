@@ -37,13 +37,20 @@ export default function Navigator(props) {
                   Object.keys(routes).find(name => routeUtil.match(routes[name].path).isMatched) || fallback
                 :
                   initialRoute || fallback;
-    return [{ name, ...routes[name] }];
+    return [{ name, ...routes[name] }, ...importRouteStack(storage.get()) ];
   }
 
   function exportRouteStack() {
     return routeStack.map(route => {
       const {Page, ...rest} = route;
       return rest;
+    });
+  }
+
+  function importRouteStack(routeStack) {
+    if (!routeStack) { return []; }
+    return routeStack.map(route => {
+      return { ...route, Page: routes[route.name].Page };
     });
   }
 
