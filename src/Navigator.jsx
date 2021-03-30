@@ -33,11 +33,16 @@ export default function Navigator(props) {
 
   function createInitialRouteStack() {
     if ( env.isWeb() && !Object.keys(routes).every(name => routes[name].path) ) return [];
+
     const name = env.isWeb()?
                   Object.keys(routes).find(name => routeUtil.match(routes[name].path).isMatched) || fallback
                 :
                   initialRoute || fallback;
-    return [{ name, ...routes[name] }, ...importRouteStack(storage.get()) ];
+
+    const routeStack = importRouteStack(storage.get());
+    (routeStack.length === 0 || routeStack[0].name !== name) && routeStack.unshift({ name, ...routes[name] });
+
+    return routeStack;
   }
 
   function exportRouteStack() {

@@ -185,3 +185,21 @@ test("Navigator import routeStack from sessionStorage at initial load", () => {
   expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }, { name: 'home', path: routes['home'].path }]);
 
 });
+
+
+test("Navigator reload page should avoid dulicated route in routeStack", () => {
+
+  const mockEvent = jest.fn();
+
+  mockLocation(new URL ('http://localhost:3000/about'));
+
+  sessionStorage.setItem('__routestack_', JSON.stringify([ { name: 'about', path: routes['about'].path } ]));
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
+  });
+
+  expect(mockEvent).toHaveBeenCalled();
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }]);
+
+});
