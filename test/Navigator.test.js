@@ -166,6 +166,8 @@ test("Navigator notify via props.onRouteStackChange when routeStack is changed",
   expect(mockEvent).toHaveBeenCalled();
   expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }]);
 
+  clearMockLocation();
+
 });
 
 
@@ -184,10 +186,12 @@ test("Navigator import routeStack from sessionStorage at initial load", () => {
   expect(mockEvent).toHaveBeenCalled();
   expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }, { name: 'home', path: routes['home'].path }]);
 
+  clearMockLocation();
+
 });
 
 
-test("Navigator reload page should avoid dulicated route in routeStack", () => {
+test("Navigator should avoid dulicated route in routeStack when reload page", () => {
 
   const mockEvent = jest.fn();
 
@@ -201,5 +205,27 @@ test("Navigator reload page should avoid dulicated route in routeStack", () => {
 
   expect(mockEvent).toHaveBeenCalled();
   expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }]);
+
+  clearMockLocation();
+
+});
+
+
+test("Navigator should avoid dulicated route in routeStack when popback", () => {
+
+  const mockEvent = jest.fn();
+
+  sessionStorage.setItem('__routestack_', JSON.stringify([ { name: 'home', path: routes['home'].path }, { name: 'about', path: routes['about'].path } ]));
+
+  mockLocation(new URL ('http://localhost:3000/about'));
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
+  });
+
+  expect(mockEvent).toHaveBeenCalled();
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }, { name: 'home', path: routes['home'].path }]);
+
+  clearMockLocation();
 
 });

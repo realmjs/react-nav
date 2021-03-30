@@ -40,7 +40,14 @@ export default function Navigator(props) {
                   initialRoute || fallback;
 
     const routeStack = importRouteStack(storage.get());
-    (routeStack.length === 0 || routeStack[0].name !== name) && routeStack.unshift({ name, ...routes[name] });
+
+    const index = routeStack.findIndex(route => route.name === name);
+
+    if (index === -1) {
+      routeStack.unshift({ name, ...routes[name] });
+    } else {
+      routeStack.unshift(routeStack.splice(index, 1)[0]);
+    }
 
     return routeStack;
   }
