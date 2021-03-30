@@ -23,7 +23,7 @@ afterEach(() => {
   sessionStorage.clear();
 });
 
-import Navigator from '../src/Navigator';
+import { Navigator } from '../src';
 
 const Home = () => (<h2>Home</h2>);
 const About = () => (<h2>About</h2>);
