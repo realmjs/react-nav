@@ -25,10 +25,7 @@ afterEach(() => {
 
 import { Navigator } from '../src';
 
-const Home = () => (<h2>Home</h2>);
-const About = () => (<h2>About</h2>);
-const Contact = () => (<h2>Contact</h2>);
-const Error404 = () => (<h2>404</h2>);
+import { Home, About, Contact, Error404 } from './page.util';
 const routes = {
   'home': { Page: Home, path: '/' },
   'about': { Page: About, path: '/about' },
