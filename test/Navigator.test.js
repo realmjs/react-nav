@@ -230,6 +230,8 @@ test("Navigator render with correct route params ", () => {
     render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
   });
 
+  expect(container.textContent).toBe("Contact");
+
   expect(mockEvent).toHaveBeenCalled();
   expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'contact', path: '/contact/test' }]);
 
