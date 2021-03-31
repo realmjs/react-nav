@@ -3,12 +3,10 @@
 export default {
 
   href: href,
+  path: path,
   host: () =>  location.host,
   hostname: () =>  location.hostname,
-  path: () =>  location.pathname,
   origin: () =>  location.origin,
-
-  push: (path) => history.pushState({}, "", path),
 
   match: match,
 
@@ -18,6 +16,12 @@ function href() {
   return location.href.replace(/(\/)\1+/g, '/').replace(/:(?=\/)/,":/");
 }
 href.set = (url) => location.href = url;
+
+function path() {
+  return location.pathname;
+}
+path.replace = (path) => history.replaceState({}, "", path);
+path.push = (path) => history.pushState({}, "", path);
 
 function match(pattern) {
   const matcher = {  };

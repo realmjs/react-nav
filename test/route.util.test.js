@@ -29,7 +29,7 @@ test("set new href", () => {
 
 test("push new path into history", () => {
 
-  route.push('/test');
+  route.path.push('/test');
   expect( route.href() ).toBe('http://localhost:3000/test');
   expect( route.path() ).toBe('/test');
 

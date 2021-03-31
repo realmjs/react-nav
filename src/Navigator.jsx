@@ -44,7 +44,10 @@ export default function Navigator(props) {
     const index = routeStack.findIndex(route => route.name === name);
 
     if (index === -1) {
-      routeStack.unshift({ name, ...routes[name] });
+      const route = { ...routes[name] };
+      (env.isWeb() && name === fallback) && routeUtil.path.replace(route.path);
+      route.path = env.isWeb()? routeUtil.path() : undefined;
+      routeStack.unshift({ name, ...route });
     } else {
       routeStack.unshift(routeStack.splice(index, 1)[0]);
     }

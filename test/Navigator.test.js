@@ -32,7 +32,7 @@ const Error404 = () => (<h2>404</h2>);
 const routes = {
   'home': { Page: Home, path: '/' },
   'about': { Page: About, path: '/about' },
-  'contact': { Page: Contact, path: '/contact' },
+  'contact': { Page: Contact, path: '/contact/:team' },
   "404": { Page: Error404, path: '/error/404'}
 };
 
@@ -91,7 +91,8 @@ test("Navigator alert an error if fallback is not defined in the routes", () => 
 
 test("Navigator render fallback route if href does not match", () => {
 
-  mockLocation(new URL ('http://localhost:3000/notexist'));
+  // mockLocation(new URL ('http://localhost:3000/notexist'));
+  history.replaceState({}, "", "/noexist")
 
   act(() => {
     render(<Navigator routes = {routes} fallback = '404' />, container);
@@ -99,6 +100,7 @@ test("Navigator render fallback route if href does not match", () => {
 
   expect(container.textContent).toBe("404");
   expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: '404', path: routes['404'].path }]);
+  expect(location.pathname).toBe('/error/404');
 
   clearMockLocation();
 
@@ -114,7 +116,7 @@ test("Navigator render fallback if initialRoute and window.location are both und
   });
 
   expect(container.textContent).toBe("404");
-  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: '404', path: routes['404'].path }]);
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: '404' }]);
 
   clearMockLocation();
 
@@ -130,7 +132,7 @@ test("Navigator render the initial route when window.location is undefined", () 
   });
 
   expect(container.textContent).toBe("About");
-  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: 'about', path: routes['about'].path }]);
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: 'about' }]);
 
   clearMockLocation();
 
@@ -225,6 +227,24 @@ test("Navigator should avoid dulicated route in routeStack when popback", () => 
 
   expect(mockEvent).toHaveBeenCalled();
   expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }, { name: 'home', path: routes['home'].path }]);
+
+  clearMockLocation();
+
+});
+
+
+test("Navigator render with correct route params ", () => {
+
+  const mockEvent = jest.fn();
+
+  mockLocation(new URL ('http://localhost:3000/contact/test'));
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
+  });
+
+  expect(mockEvent).toHaveBeenCalled();
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'contact', path: '/contact/test' }]);
 
   clearMockLocation();
 
