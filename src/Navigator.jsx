@@ -20,7 +20,10 @@ export default function Navigator(props) {
       {
         routeStack.map((route, index) => {
           const display = index === 0 ? 'block' : 'none';
-          if (!route.Page) { return null; }
+
+          if (!route.Page)
+            return null;
+
           return (
             <div key = { route.name } style = {{ display }}>
               { React.createElement(route.Page) }
@@ -32,12 +35,18 @@ export default function Navigator(props) {
   );
 
   function createInitialRouteStack() {
-    if ( env.isWeb() && !Object.keys(routes).every(name => routes[name].path) ) return [];
+    if ( env.isWeb() && !Object.keys(routes).every(name => routes[name].path || routes[name].redirect) )
+      return [];
 
-    const name = env.isWeb()?
-                  Object.keys(routes).find(name => routeUtil.match(routes[name].path).isMatched) || fallback
+    let name = env.isWeb()?
+                  Object.keys(routes).find(name => routes[name].path && routeUtil.match(routes[name].path).isMatched) || fallback
                 :
                   initialRoute || fallback;
+
+    if (routes[name].redirect) {
+      name = routes[name].redirect;
+      routeUtil.path.replace(routes[name].path);
+    }
 
     const routeStack = importRouteStack(storage.get());
 
@@ -63,7 +72,9 @@ export default function Navigator(props) {
   }
 
   function importRouteStack(routeStack) {
-    if (!routeStack) { return []; }
+    if (!routeStack)
+      return [];
+
     return routeStack.map(route => {
       return { ...route, Page: routes[route.name].Page };
     });
@@ -78,8 +89,8 @@ Navigator.propTypes = {
 function validateRoutes(props) {
   const { routes }= props;
   if ( !routes ) return new Error("Invalid routes definition");
-  if ( !Object.keys(routes).every(name => routes[name].Page) ) return new Error("Invalid routes definition");
-  if ( env.isWeb() && !Object.keys(routes).every(name => routes[name].path) ) return new Error("Invalid routes definition");
+  if ( !Object.keys(routes).every(name => routes[name].Page || routes[name].redirect) ) return new Error("Invalid routes definition");
+  if ( env.isWeb() && !Object.keys(routes).every(name => routes[name].path || routes[name].redirect) ) return new Error("Invalid routes definition");
   if ( props.initialRoute && Object.keys(routes).indexOf(props.initialRoute) === -1 ) return new Error("initialRoute is not defined in routes object");
   if ( props.fallback && Object.keys(routes).indexOf(props.fallback) === -1 ) return new Error("fallback is not defined in routes object");
   return null;

@@ -13,6 +13,7 @@ const routes = {
   "home": { path: "/", Page: Home },
   "about": { path: "/about", Page: About },
   "404": { path: "/404", Page: E404 },
+  'landing': { redirect: 'home', path: '/landing'},
 };
 
 function Demo() {

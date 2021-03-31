@@ -33,7 +33,8 @@ const routes = {
   'home': { Page: Home, path: '/' },
   'about': { Page: About, path: '/about' },
   'contact': { Page: Contact, path: '/contact/:team' },
-  "404": { Page: Error404, path: '/error/404'}
+  "404": { Page: Error404, path: '/error/404'},
+  "landing": { redirect: 'home', path: '/landing' },
 };
 
 
@@ -234,5 +235,23 @@ test("Navigator render with correct route params ", () => {
 
   expect(mockEvent).toHaveBeenCalled();
   expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'contact', path: '/contact/test' }]);
+
+});
+
+
+test("Navigator redirect route", () => {
+
+  const mockEvent = jest.fn();
+
+  setLocation("/landing");
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
+  });
+
+  expect(container.textContent).toBe("Home");
+
+  expect(mockEvent).toHaveBeenCalled();
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'home', path: '/' }]);
 
 });
