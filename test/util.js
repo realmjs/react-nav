@@ -11,3 +11,7 @@ export function mockLocation(loc) {
 export function clearMockLocation() {
   window.location = __location;
 }
+
+export function setLocation(path) {
+  history.replaceState({}, "", path);
+}
