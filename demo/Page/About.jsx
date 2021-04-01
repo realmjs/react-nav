@@ -3,7 +3,7 @@
 import React from 'react';
 
 export default function({ route }) {
-console.log(route)
+
   const { team } = route.params;
 
   return (
