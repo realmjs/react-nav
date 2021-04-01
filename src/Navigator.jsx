@@ -26,7 +26,7 @@ export default function Navigator(props) {
 
           return (
             <div key = { route.name } style = {{ display }}>
-              { React.createElement(route.Page) }
+              { React.createElement(route.Page, { route: exportRouteForPage(route) }) }
             </div>
           );
         })
@@ -56,6 +56,7 @@ export default function Navigator(props) {
       const route = { ...routes[name] };
       (env.isWeb() && name === fallback) && routeUtil.path.replace(route.path);
       route.path = env.isWeb()? routeUtil.path() : undefined;
+      route.params = env.isWeb()? routeUtil.match(routes[name].path).params : undefined;
       routeStack.unshift({ name, ...route });
     } else {
       routeStack.unshift(routeStack.splice(index, 1)[0]);
@@ -78,6 +79,11 @@ export default function Navigator(props) {
     return routeStack.map(route => {
       return { ...route, Page: routes[route.name].Page };
     });
+  }
+
+  function exportRouteForPage(route) {
+    const {Page, ...exported} = { ...route };
+    return exported;
   }
 
 }

@@ -96,7 +96,7 @@ test("Navigator render fallback route if href does not match", () => {
   });
 
   expect(container.textContent).toBe("404");
-  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: '404', path: routes['404'].path }]);
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: '404', path: routes['404'].path, params: {} }]);
   expect(location.pathname).toBe('/error/404');
 
 });
@@ -143,7 +143,7 @@ test("Navigator render the route corresponding to href", () => {
   });
 
   expect(container.textContent).toBe("About");
-  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: 'about', path: routes['about'].path }]);
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: 'about', path: routes['about'].path, params: {} }]);
 
 });
 
@@ -159,7 +159,7 @@ test("Navigator notify via props.onRouteStackChange when routeStack is changed",
   });
 
   expect(mockEvent).toHaveBeenCalled();
-  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }]);
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path, params: {} }]);
 
 });
 
@@ -170,14 +170,17 @@ test("Navigator import routeStack from sessionStorage at initial load", () => {
 
   setLocation("/about");
 
-  sessionStorage.setItem('__routestack_', JSON.stringify([ { name: 'home', path: routes['home'].path } ]));
+  sessionStorage.setItem('__routestack_', JSON.stringify([ { name: 'home', path: routes['home'].path, params: {} } ]));
 
   act(() => {
     render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
   });
 
   expect(mockEvent).toHaveBeenCalled();
-  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }, { name: 'home', path: routes['home'].path }]);
+  expect(mockEvent.mock.calls[0][0]).toEqual([
+    { name: 'about', path: routes['about'].path, params: {} },
+    { name: 'home', path: routes['home'].path, params: {} }
+  ]);
 
 });
 
@@ -188,14 +191,14 @@ test("Navigator should avoid dulicated route in routeStack when reload page", ()
 
   setLocation("/about");
 
-  sessionStorage.setItem('__routestack_', JSON.stringify([ { name: 'about', path: routes['about'].path } ]));
+  sessionStorage.setItem('__routestack_', JSON.stringify([ { name: 'about', path: routes['about'].path, params: {} } ]));
 
   act(() => {
     render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
   });
 
   expect(mockEvent).toHaveBeenCalled();
-  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }]);
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path, params: {} }]);
 
 });
 
@@ -204,7 +207,10 @@ test("Navigator should avoid dulicated route in routeStack when popback", () => 
 
   const mockEvent = jest.fn();
 
-  sessionStorage.setItem('__routestack_', JSON.stringify([ { name: 'home', path: routes['home'].path }, { name: 'about', path: routes['about'].path } ]));
+  sessionStorage.setItem('__routestack_', JSON.stringify([
+    { name: 'home', path: routes['home'].path, params: {} },
+    { name: 'about', path: routes['about'].path, params: {} }
+  ]));
 
   setLocation("/about");
 
@@ -213,25 +219,10 @@ test("Navigator should avoid dulicated route in routeStack when popback", () => 
   });
 
   expect(mockEvent).toHaveBeenCalled();
-  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'about', path: routes['about'].path }, { name: 'home', path: routes['home'].path }]);
-
-});
-
-
-test("Navigator render with correct route params ", () => {
-
-  const mockEvent = jest.fn();
-
-  setLocation("/contact/test");
-
-  act(() => {
-    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
-  });
-
-  expect(container.textContent).toBe("Contact");
-
-  expect(mockEvent).toHaveBeenCalled();
-  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'contact', path: '/contact/test' }]);
+  expect(mockEvent.mock.calls[0][0]).toEqual([
+    { name: 'about', path: routes['about'].path, params: {} },
+    { name: 'home', path: routes['home'].path, params: {} }
+  ]);
 
 });
 
@@ -249,6 +240,23 @@ test("Navigator redirect route", () => {
   expect(container.textContent).toBe("Home");
 
   expect(mockEvent).toHaveBeenCalled();
-  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'home', path: '/' }]);
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'home', path: '/', params: {} }]);
+
+});
+
+test("Navigator passing params to page ", () => {
+
+  const mockEvent = jest.fn();
+
+  setLocation("/contact/test");
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
+  });
+
+  expect(container.textContent).toBe("Contact test");
+
+  expect(mockEvent).toHaveBeenCalled();
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'contact', path: '/contact/test', params: { team: 'test' } }]);
 
 });
