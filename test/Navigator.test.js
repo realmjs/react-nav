@@ -244,6 +244,7 @@ test("Navigator redirect route", () => {
 
 });
 
+
 test("Navigator passing params to page ", () => {
 
   const mockEvent = jest.fn();

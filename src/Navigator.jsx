@@ -5,15 +5,21 @@ import React, { useState, useEffect } from 'react';
 import routeUtil from './route.util';
 import env from './env.util';
 import storage from './storage.util';
+import { registerNavigator } from './nav';
+import { useComponentWillMount } from './lifecycle.hook';
 
 export default function Navigator(props) {
 
   const { routes, initialRoute, fallback } = props;
 
-  const [routeStack, setRouteStack] = useState( createInitialRouteStack() );
+  const [routeStack, setRouteStack] = useState(() => createInitialRouteStack());
+
+  useComponentWillMount(setInitialLocation);
 
   useEffect(() => storage.set(exportRouteStack()), [routeStack]);
   useEffect(() => props.onRouteStackChange && props.onRouteStackChange(exportRouteStack()), [routeStack]);
+
+  useEffect(() => registerNavigator({ navigate }), []);
 
   return (
     <div data-testid = "navigator">
@@ -45,7 +51,6 @@ export default function Navigator(props) {
 
     if (routes[name].redirect) {
       name = routes[name].redirect;
-      routeUtil.path.replace(routes[name].path);
     }
 
     const routeStack = importRouteStack(storage.get());
@@ -54,15 +59,19 @@ export default function Navigator(props) {
 
     if (index === -1) {
       const route = { ...routes[name] };
-      (env.isWeb() && name === fallback) && routeUtil.path.replace(route.path);
-      route.path = env.isWeb()? routeUtil.path() : undefined;
       route.params = env.isWeb()? routeUtil.match(routes[name].path).params : undefined;
+      route.path = env.isWeb()? routeUtil.constructLocationPath(route.path, route.params) : undefined;
       routeStack.unshift({ name, ...route });
     } else {
       routeStack.unshift(routeStack.splice(index, 1)[0]);
     }
 
     return routeStack;
+  }
+
+  function setInitialLocation() {
+    const route = routeStack[0];
+    env.isWeb() && routeUtil.path.replace(route.path);
   }
 
   function exportRouteStack() {
@@ -84,6 +93,14 @@ export default function Navigator(props) {
   function exportRouteForPage(route) {
     const {Page, ...exported} = { ...route };
     return exported;
+  }
+
+  function navigate(name, params) {
+    const route = { ...routes[name] };
+    route.params = params || {};
+    route.path = env.isWeb()? routeUtil.constructLocationPath(route.path, route.params) : undefined;
+    env.isWeb() && routeUtil.path.replace(route.path);
+    setRouteStack(routeStack => [{ name, ...route }, ...routeStack]);
   }
 
 }
