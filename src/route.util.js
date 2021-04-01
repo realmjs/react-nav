@@ -10,6 +10,8 @@ export default {
 
   match: match,
 
+  constructLocationPath: constructLocationPath,
+
 };
 
 function href() {
@@ -52,3 +54,21 @@ function matchParams(path, pattern) {
 function normalize(path) {
   return path === '/'? path : path.replace(/\/$/, '');
 }
+
+function constructLocationPath(path, params) {
+  const parts = path.split('/').filter(u => u.length > 0).map(u => u.trim().toLowerCase());
+  let locationPath = '';
+  for (let i = 0; i < parts.length; i++) {
+    if (/^:/.test(parts[i])) {
+      const p = parts[i].split(':').pop();
+      if (params && params[p]) {
+        locationPath += `/${params[p]}`;
+      } else {
+        throw new Error(`Missing value for ${parts[i]} in ${path}`);
+      }
+    } else {
+      locationPath += `/${parts[i]}`;
+    }
+  }
+  return locationPath.length === 0? '/' : locationPath;
+};
