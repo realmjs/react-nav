@@ -2,7 +2,7 @@
 
 import route from '../src/route.util';
 
-import { mockLocation, clearMockLocation } from './util';
+import { setLocation, mockLocation, clearMockLocation } from './util';
 
 test("extract url information from location href", () => {
 
@@ -50,9 +50,22 @@ test("matching a pattern with current href", () => {
   expect( route.match("/notest").isMatched ).toBe(false);
   expect( route.match("/test/t1").isMatched ).toBe(false);
 
-  const matcher = route.match("/test/:s/:t");
-  expect(matcher.params).toEqual({ s: 's1', t: 't1' });
-
   clearMockLocation();
+
+});
+
+test("matching params with current href", () => {
+
+  setLocation('/test/p1');
+  expect(route.match("/test/:param").params).toEqual({ param: 'p1' });
+
+  setLocation('/test/s1/t1');
+  expect(route.match("/test/:s/:t").params).toEqual({ s: 's1', t: 't1' });
+
+  setLocation('/test/s1/case/t1');
+  expect(route.match("/test/:s/case/:t").params).toEqual({ s: 's1', t: 't1' });
+
+  setLocation('/test/s1/result');
+  expect(route.match("/test/:s/result").params).toEqual({ s: 's1' });
 
 });
