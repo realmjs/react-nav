@@ -5,13 +5,13 @@ import { render } from 'react-dom';
 
 import { Navigator } from '../src';
 
-import Home from './Home';
-import About from './About';
-import E404 from './E404';
+import Home from './Page/Home';
+import About from './Page/About';
+import E404 from './Page/E404';
 
 const routes = {
   "home": { path: "/", Page: Home },
-  "about": { path: "/about", Page: About },
+  "about": { path: "/about/:team", Page: About },
   "404": { path: "/404", Page: E404 },
   'landing': { redirect: 'home', path: '/landing'},
 };

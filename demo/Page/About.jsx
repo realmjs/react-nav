@@ -2,11 +2,14 @@
 
 import React from 'react';
 
-export default function() {
+export default function({ route }) {
+console.log(route)
+  const { team } = route.params;
 
   return (
     <div>
       <h3 className = "w3-text-red"> A B O U T </h3>
+      <p> { team } </p>
     </div>
   );
 
