@@ -100,7 +100,17 @@ export default function Navigator(props) {
     route.params = params || {};
     route.path = env.isWeb()? routeUtil.constructLocationPath(route.path, route.params) : undefined;
     env.isWeb() && routeUtil.path.replace(route.path);
-    setRouteStack(routeStack => [{ name, ...route }, ...routeStack]);
+    setRouteStack(routeStack => addToRouteStackIfNotExist(routeStack, { name, ...route }));
+  }
+
+  function addToRouteStackIfNotExist(routeStack, route) {
+    const index = routeStack.findIndex(r => r.name === route.name);
+    if (index === -1) {
+      return [route, ...routeStack];
+    } else {
+      routeStack.unshift(routeStack.splice(index, 1)[0]);
+      return [...routeStack];
+    }
   }
 
 }

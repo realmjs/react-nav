@@ -41,7 +41,6 @@ test("Navigate between pages", () => {
   });
 
   act(() => nav.navigate('about'));
-
   expect(location.pathname).toBe("/about");
   expect(container.textContent).toBe("AboutHome");
   expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
@@ -50,7 +49,6 @@ test("Navigate between pages", () => {
   ]);
 
   act(() => nav.navigate('contact', { team: 'test' }));
-
   expect(location.pathname).toBe("/contact/test");
   expect(container.textContent).toBe("Contact testAboutHome");
   expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
@@ -59,7 +57,14 @@ test("Navigate between pages", () => {
     { name: 'home', path: '/', params: {} },
   ]);
 
-});
+  act(() => nav.navigate('home'));
+  expect(location.pathname).toBe("/");
+  expect(container.textContent).toBe("HomeContact testAbout");
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'home', path: '/', params: {} },
+    { name: 'contact', path: '/contact/test', params: { team: 'test' } },
+    { name: 'about', path: '/about', params: {} }
+  ]);
 
-// test invalid name
-// test invalid params
+
+});
