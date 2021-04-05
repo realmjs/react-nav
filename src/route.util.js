@@ -64,7 +64,7 @@ function constructLocationPath(path, params) {
       if (params && params[p]) {
         locationPath += `/${params[p]}`;
       } else {
-        throw new Error(`Missing value for ${parts[i]} in ${path}`);
+        throw new Error(`route params do not match the param's pattern`);
       }
     } else {
       locationPath += `/${parts[i]}`;

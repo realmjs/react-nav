@@ -97,12 +97,17 @@ export default function Navigator(props) {
 
   function navigate(name, params) {
     if (!routes[name]) {
-      console.error(`route name ${name} does not exist`);
+      console.error(`[Error: route name ${name} does not exist]`);
       return false;
     }
     const route = { ...routes[name] };
     route.params = params || {};
-    route.path = env.isWeb()? routeUtil.constructLocationPath(route.path, route.params) : undefined;
+    try {
+      route.path = env.isWeb()? routeUtil.constructLocationPath(route.path, route.params) : undefined;
+    } catch(err) {
+      console.error("[Error: route params do not match the param's pattern]");
+      return false;
+    }
     env.isWeb() && routeUtil.path.replace(route.path);
     setRouteStack(routeStack => addToRouteStackIfNotExist(routeStack, { name, ...route }));
   }
