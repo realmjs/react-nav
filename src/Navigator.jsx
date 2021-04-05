@@ -96,6 +96,10 @@ export default function Navigator(props) {
   }
 
   function navigate(name, params) {
+    if (!routes[name]) {
+      console.error(`route name ${name} does not exist`);
+      return false;
+    }
     const route = { ...routes[name] };
     route.params = params || {};
     route.path = env.isWeb()? routeUtil.constructLocationPath(route.path, route.params) : undefined;

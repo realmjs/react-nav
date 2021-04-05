@@ -68,3 +68,27 @@ test("Navigate between pages", () => {
 
 
 });
+
+
+test("Alert error when navigating with invalid route name", () => {
+
+  const spy = jest.spyOn(console, 'error').mockImplementation();
+
+  setLocation("/");
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' />, container);
+  });
+
+  act(() => nav.navigate('notexist'));
+  expect(spy).toHaveBeenCalled();
+  expect(spy.mock.calls[0][0]).toEqual("route name notexist does not exist");
+  expect(location.pathname).toBe("/");
+  expect(container.textContent).toBe("Home");
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'home', path: '/', params: {} },
+  ]);
+
+  spy.mockRestore();
+
+});
