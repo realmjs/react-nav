@@ -15,3 +15,7 @@ export function clearMockLocation() {
 export function setLocation(path) {
   history.replaceState({}, "", path);
 }
+
+export function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
