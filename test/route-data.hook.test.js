@@ -4,7 +4,7 @@ import "core-js/stable";
 import "regenerator-runtime/runtime";
 
 import { renderHook } from '@testing-library/react-hooks';
-import useRouteData from '../src/routedata.hook';
+import useRouteData from '../src/route-data.hook';
 import event from '../src/event-emitter';
 
 jest.mock('../src/event-emitter');
