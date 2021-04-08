@@ -5,7 +5,7 @@ import "regenerator-runtime/runtime";
 
 import { renderHook } from '@testing-library/react-hooks';
 import useRouteData from '../src/route-data.hook';
-import event from '../src/event-emitter';
+import EventEmitter from '../src/event-emitter';
 
 jest.mock('../src/event-emitter');
 
@@ -50,14 +50,14 @@ test("Route Data is a function returning a promise that resolving data", async (
 
 
 test("Route Data is a function returning a promise that rejecting data", async () => {
-  const route = { data: jest.fn(() => Promise.reject('RouteError')) };
+  const route = { data: jest.fn(() => Promise.reject('RouteError')), event: new EventEmitter() };
   const { result, waitForNextUpdate } = renderHook(() => useRouteData(route));
   expect(result.current).toBe(null);
 
   await waitForNextUpdate();
   expect(route.data).toHaveBeenCalled();
   expect(route.data).toHaveBeenCalledWith(undefined, undefined);
-  expect(event.emit).toHaveBeenCalled();
-  expect(event.emit).toHaveBeenCalledWith('error', { scope: 'data', error: 'RouteError' });
+  expect(route.event.emit).toHaveBeenCalled();
+  expect(route.event.emit).toHaveBeenCalledWith('error', { scope: 'data', error: 'RouteError' });
   expect(result.current).toBeUndefined();
 });

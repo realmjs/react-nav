@@ -1,10 +1,12 @@
 "use strict"
 
-import event from '../src/event-emitter';
+import EventEmitter from '../src/event-emitter';
 
 beforeEach(() => jest.clearAllMocks());
 
 test("Verify event properties", () => {
+  const event = new EventEmitter();
+  expect(event).toBeInstanceOf(EventEmitter);
   expect(event).toHaveProperty('__events.error', []);
   expect(event).toHaveProperty('on');
   expect(event).toHaveProperty('off');
@@ -16,6 +18,7 @@ test("Register and unregister an event", () => {
   const h2 = jest.fn();
   const h3 = jest.fn();
 
+  const event = new EventEmitter();
   event.on("error", h1);
   event.on("error", h2);
   event.on("error", h3);
@@ -35,6 +38,7 @@ test("Emit an event", () => {
   const h1 = jest.fn();
   const h2 = jest.fn();
 
+  const event = new EventEmitter();
   event.on("error", h1);
   event.on("error", h2);
 

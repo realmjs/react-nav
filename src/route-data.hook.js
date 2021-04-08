@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 
-import event from './event-emitter';
-
 export default function(route, props) {
   const [data, setData] = useState(isFunction(route.data)? null : route.data);
   useEffect(() => isFunction(route.data) && updateData() , []);
@@ -14,7 +12,7 @@ export default function(route, props) {
     if (result.then)
       result.then(data => setData(data))
             .catch(error => {
-              event.emit("error", { scope: 'data', error });
+              route.event.emit("error", { scope: 'data', error });
               setData(undefined);
             });
     else
