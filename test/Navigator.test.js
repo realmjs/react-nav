@@ -9,6 +9,7 @@ import { render, unmountComponentAtNode } from "react-dom";
 import { act } from "react-dom/test-utils";
 
 import { setLocation, mockLocation, clearMockLocation } from './util';
+import EventEmitter from "../src/event-emitter";
 
 let container = null;
 beforeEach(() => {
@@ -259,5 +260,21 @@ test("Navigator passing params to page ", () => {
 
   expect(mockEvent).toHaveBeenCalled();
   expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'contact', path: '/contact/test', params: { team: 'test' } }]);
+
+});
+
+
+test("Navigator bind event to route object before exporting it to Page", () => {
+  const Page = jest.fn(() => null);
+  const routes = { 'test': { Page, path: '/test' } };
+  setLocation("/test");
+
+  act(() => {
+    render(<Navigator routes = {routes} />, container);
+  });
+
+  expect(Page).toHaveBeenCalled();
+  const route = { name: "test", params: {}, path: "/test", event: new EventEmitter() };
+  expect(Page.mock.calls[0][0]).toEqual({ route });
 
 });

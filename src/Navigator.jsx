@@ -7,6 +7,7 @@ import env from './env.util';
 import storage from './storage.util';
 import { registerNavigator } from './nav';
 import { useComponentWillMount } from './lifecycle.hook';
+import EventEmitter from '../src/event-emitter';
 
 export default function Navigator(props) {
 
@@ -92,6 +93,7 @@ export default function Navigator(props) {
 
   function exportRouteForPage(route) {
     const {Page, ...exported} = { ...route };
+    exported.event = new EventEmitter();
     return exported;
   }
 
