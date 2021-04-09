@@ -88,7 +88,7 @@ export default function Navigator(props) {
       return [];
 
     return routeStack.map(route => {
-      return { ...route, Page: routes[route.name].Page };
+      return { ...route, Page: routes[route.name].Page, data: routes[route.name].data };
     });
   }
 
