@@ -24,7 +24,7 @@ afterEach(() => {
   sessionStorage.clear();
 });
 
-import { Navigator } from '../src';
+import { Navigator, nav } from '../src';
 
 import { Home, About, Contact, Error404 } from './page.util';
 const routes = {
@@ -228,9 +228,77 @@ test("Navigator should avoid dulicated route in routeStack when popback", () => 
 });
 
 
+test("Navigator reload route: already in routeStack but with different path, should add to stack", () => {
+
+  sessionStorage.setItem('__routestack_', JSON.stringify([
+    { name: 'home', path: '/', params: {} },
+    { name: 'contact', path: '/contact/dev', params: { team: 'dev' } }
+  ]));
+
+  setLocation("/contact/test");
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' />, container);
+  });
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'contact', path: '/contact/test', params: { team: 'test' } },
+    { name: 'home', path: '/', params: {} },
+    { name: 'contact', path: '/contact/dev', params: { team: 'dev' } }
+  ]);
+
+});
+
+
+test("Navigator navigate route: already in routeStack but with different path, should add to stack", () => {
+
+  sessionStorage.setItem('__routestack_', JSON.stringify([
+    { name: 'home', path: '/', params: {} },
+    { name: 'contact', path: '/contact/dev', params: { team: 'dev' } }
+  ]));
+
+  setLocation("/");
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_'  />, container);
+  });
+
+  act(() => nav.navigate('contact', { team: 'test' }));
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'contact', path: '/contact/test', params: { team: 'test' } },
+    { name: 'home', path: '/', params: {} },
+    { name: 'contact', path: '/contact/dev', params: { team: 'dev' } }
+  ]);
+
+});
+
+
 test("Navigator redirect route", () => {
 
   const mockEvent = jest.fn();
+
+  setLocation("/landing");
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
+  });
+
+  expect(container.textContent).toBe("Home");
+
+  expect(mockEvent).toHaveBeenCalled();
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: 'home', path: '/', params: {} }]);
+
+});
+
+
+test("Navigator redirect route that already in the routeStack", () => {
+
+  const mockEvent = jest.fn();
+
+  sessionStorage.setItem('__routestack_', JSON.stringify([
+    { name: 'home', path: '/', params: {} },
+  ]));
 
   setLocation("/landing");
 

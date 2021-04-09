@@ -32,7 +32,7 @@ export default function Navigator(props) {
             return null;
 
           return (
-            <div key = { route.name } style = {{ display }}>
+            <div key = { `${route.name}.${route.path}` } style = {{ display }}>
               { React.createElement(route.Page, { route: exportRouteForPage(route) }) }
             </div>
           );
@@ -52,11 +52,12 @@ export default function Navigator(props) {
 
     if (routes[name].redirect) {
       name = routes[name].redirect;
+      env.isWeb() && routeUtil.path.replace(routes[name].path);
     }
 
     const routeStack = importRouteStack(storage.get());
 
-    const index = routeStack.findIndex(route => route.name === name);
+    const index = routeStack.findIndex(route => route.name === name && route.path === routeUtil.path());
 
     if (index === -1) {
       const route = { ...routes[name] };
@@ -115,7 +116,7 @@ export default function Navigator(props) {
   }
 
   function addToRouteStackIfNotExist(routeStack, route) {
-    const index = routeStack.findIndex(r => r.name === route.name);
+    const index = routeStack.findIndex(r => r.name === route.name && r.path === route.path);
     if (index === -1) {
       return [route, ...routeStack];
     } else {
