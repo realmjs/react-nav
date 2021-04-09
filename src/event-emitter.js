@@ -2,7 +2,7 @@
 
 export default class {
   constructor() {
-    this.__events = { error: [] };
+    this.__events = { error: [], action: [], update: [] };
   }
 
   on(type, handler) {
