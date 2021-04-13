@@ -332,17 +332,30 @@ test("Navigator passing params to page ", () => {
 });
 
 
-test("Navigator bind event to route object before exporting it to Page", () => {
-  const Page = jest.fn(() => null);
-  const routes = { 'test': { Page, path: '/test' } };
+test("Navigator passing enough properties to route object", () => {
+  const PageTest = jest.fn(() => null);
+  const PageDev = jest.fn(() => null);
+  const routes = {
+    'test': { Page: PageTest, path: '/test' },
+    'dev': { Page: PageDev, path: '/dev' }
+  };
+
   setLocation("/test");
 
   act(() => {
     render(<Navigator routes = {routes} />, container);
   });
 
-  expect(Page).toHaveBeenCalled();
-  const route = { name: "test", params: {}, path: "/test", event: new EventEmitter() };
-  expect(Page.mock.calls[0][0]).toEqual({ route });
+  expect(PageTest).toHaveBeenCalled();
+  expect(PageTest.mock.calls[0][0]).toEqual({ route: { name: "test", params: {}, path: "/test", event: new EventEmitter(), isActive: true } });
+  expect(PageDev).not.toHaveBeenCalled();
+
+  act(() => nav.navigate('dev'));
+
+  expect(PageTest).toHaveBeenCalled();
+  expect(PageTest.mock.calls[1][0]).toEqual({ route: { name: "test", params: {}, path: "/test", event: new EventEmitter(), isActive: false } });
+  expect(PageDev).toHaveBeenCalled();
+  expect(PageDev.mock.calls[0][0]).toEqual({ route: { name: "dev", params: {}, path: "/dev", event: new EventEmitter(), isActive: true } });
+
 
 });

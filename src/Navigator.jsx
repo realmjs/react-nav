@@ -31,9 +31,12 @@ export default function Navigator(props) {
           if (!route.Page)
             return null;
 
+          const exportedRoute = exportRouteForPage(route);
+          exportedRoute.isActive = index === 0;
+
           return (
             <div key = { `${route.name}.${route.path}` } style = {{ display }}>
-              { React.createElement(route.Page, { route: exportRouteForPage(route) }) }
+              { React.createElement(route.Page, { route: exportedRoute }) }
             </div>
           );
         })
