@@ -1,6 +1,7 @@
 "use strict"
 
 import { useState, useEffect } from 'react';
+import { isFunction } from './util';
 
 export default function(route, props) {
   const [data, setData] = useState(isFunction(route.data)? null : route.data);
@@ -27,8 +28,4 @@ export default function(route, props) {
     scope === 'data' && setData(data);
   }
 
-}
-
-function isFunction(func) {
-  return func && Object.prototype.toString.call(func) === "[object Function]";
 }
