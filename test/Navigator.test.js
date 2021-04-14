@@ -24,7 +24,7 @@ afterEach(() => {
   sessionStorage.clear();
 });
 
-import { Navigator, nav } from '../src';
+import { Navigator, nav, useDocumentTitle } from '../src';
 
 import { Home, About, Contact, Error404 } from './page.util';
 const routes = {
@@ -357,5 +357,27 @@ test("Navigator passing enough properties to route object", () => {
   expect(PageDev).toHaveBeenCalled();
   expect(PageDev.mock.calls[0][0]).toEqual({ route: { name: "dev", params: {}, path: "/dev", event: new EventEmitter(), isActive: true } });
 
+});
+
+
+test("Navigator use hook to set document title", () => {
+
+  const Page = ({ route }) => { useDocumentTitle(route); return null; }
+  const routes = {
+    test: { Page, path: '/test/:team', title: 'Test Team' },
+    dept: { Page, path: '/department/:dept', title: 'Department' },
+  };
+
+  setLocation("/test/alpha");
+
+  act(() => {
+    render(<Navigator routes = {routes} />, container);
+  });
+
+  expect(document.title).toBe('Test Team');
+
+  act(() => nav.navigate('dept', { dept: 'test' }));
+
+  expect(document.title).toBe('Department');
 
 });
