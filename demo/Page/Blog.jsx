@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-export default function() {
+import { useDocumentTitle } from '../../src';
+
+export default function({ route }) {
+
+  useDocumentTitle(route);
 
   return (
     <div>
