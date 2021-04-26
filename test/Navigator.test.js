@@ -381,3 +381,23 @@ test("Navigator use hook to set document title", () => {
   expect(document.title).toBe('Department');
 
 });
+
+
+test("Corner case: test for special path pattern: /:param/test", () => {
+
+  const routes = {
+    home: { path: '/:param', Page: () => <p>Home</p> },
+    test: { path: '/:param/test', Page: () => <p>Test</p> },
+    404: { path: '/404', Page: () => <p>404</p> }
+  }
+
+  setLocation('/p/test');
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' />, container);
+  });
+
+  expect(location.pathname).toBe('/p/test');
+  expect(container.textContent).toBe("Test");
+
+});
