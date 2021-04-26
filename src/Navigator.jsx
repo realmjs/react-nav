@@ -7,7 +7,7 @@ import env from './env.util';
 import storage from './storage.util';
 import { registerNavigator } from './nav';
 import { useComponentWillMount } from './lifecycle.hook';
-import EventEmitter from '../src/event-emitter';
+import EventEmitter from './event-emitter';
 
 export default function Navigator(props) {
 
