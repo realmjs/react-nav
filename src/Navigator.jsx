@@ -58,6 +58,8 @@ export default function Navigator(props) {
       env.isWeb() && routeUtil.path.replace(routes[name].path);
     }
 
+    (env.isWeb() && name === fallback) && routeUtil.path.replace(routes[name].path);
+
     const routeStack = importRouteStack(storage.get());
 
     const index = routeStack.findIndex(route => route.name === name && route.path === routeUtil.path());

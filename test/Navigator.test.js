@@ -401,3 +401,25 @@ test("Corner case: test for special path pattern: /:param/test", () => {
   expect(container.textContent).toBe("Test");
 
 });
+
+
+test("Corner case: test for duplicate error path", () => {
+
+  const mockEvent = jest.fn();
+
+  sessionStorage.setItem('__routestack_', JSON.stringify([
+    { name: '404', path: '/error/404', params: {} },
+  ]));
+
+  setLocation("/notexist");
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' onRouteStackChange = {mockEvent} />, container);
+  });
+
+  expect(container.textContent).toBe("404");
+
+  expect(mockEvent).toHaveBeenCalled();
+  expect(mockEvent.mock.calls[0][0]).toEqual([{ name: '404', path: '/error/404', params: {} }]);
+
+});
