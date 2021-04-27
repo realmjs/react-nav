@@ -68,6 +68,10 @@ test("matching params with current href", () => {
   setLocation('/test/s1/result');
   expect(route.match("/test/:s/result").params).toEqual({ s: 's1' });
 
+  setLocation('/test/t-01');
+  expect(route.match("/test/:t").isMatched).toBe(true);
+  expect(route.match("/test/:t").params).toEqual({ t: 't-01' });
+
 });
 
 test("Corner case: test for special path pattern: /:param/test", () => {
@@ -79,4 +83,4 @@ test("Corner case: test for special path pattern: /:param/test", () => {
 
   clearMockLocation();
 
-})
+});

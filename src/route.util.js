@@ -28,7 +28,7 @@ path.push = (path) => history.pushState({}, "", path);
 function match(pattern) {
   const matcher = {  };
 
-  const _pattern = `^${normalize(pattern).replace(/:\w+/g,'\\w+')}$`; // replace pattern :param -> \w+
+  const _pattern = `^${normalize(pattern).replace(/:\w+/g,'[\\w\\-]+')}$`; // replace pattern :param -> [\w\-]+
   const currentPath = normalize(this.path());
 
   const regExp = new RegExp( _pattern );
