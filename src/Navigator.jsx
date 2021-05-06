@@ -36,7 +36,7 @@ export default function Navigator(props) {
 
           return (
             <div key = { `${route.name}.${route.path}` } style = {{ display }}>
-              { React.createElement(route.Page, { route: exportedRoute }) }
+              { React.createElement(route.Page, { ...props, route: exportedRoute }) }
             </div>
           );
         })

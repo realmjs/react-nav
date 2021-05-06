@@ -347,15 +347,15 @@ test("Navigator passing enough properties to route object", () => {
   });
 
   expect(PageTest).toHaveBeenCalled();
-  expect(PageTest.mock.calls[0][0]).toEqual({ route: { name: "test", params: {}, path: "/test", event: new EventEmitter(), isActive: true } });
+  expect(PageTest.mock.calls[0][0]).toHaveProperty('route', { name: "test", params: {}, path: "/test", event: new EventEmitter(), isActive: true });
   expect(PageDev).not.toHaveBeenCalled();
 
   act(() => nav.navigate('dev'));
 
   expect(PageTest).toHaveBeenCalled();
-  expect(PageTest.mock.calls[1][0]).toEqual({ route: { name: "test", params: {}, path: "/test", event: new EventEmitter(), isActive: false } });
+  expect(PageTest.mock.calls[1][0]).toHaveProperty('route', { name: "test", params: {}, path: "/test", event: new EventEmitter(), isActive: false });
   expect(PageDev).toHaveBeenCalled();
-  expect(PageDev.mock.calls[0][0]).toEqual({ route: { name: "dev", params: {}, path: "/dev", event: new EventEmitter(), isActive: true } });
+  expect(PageDev.mock.calls[0][0]).toHaveProperty('route', { name: "dev", params: {}, path: "/dev", event: new EventEmitter(), isActive: true });
 
 });
 
@@ -421,5 +421,23 @@ test("Corner case: test for duplicate error path", () => {
 
   expect(mockEvent).toHaveBeenCalled();
   expect(mockEvent.mock.calls[0][0]).toEqual([{ name: '404', path: '/error/404', params: {} }]);
+
+});
+
+
+test("Navigator propagate its props to Page", () => {
+  const PageTest = jest.fn(() => null);
+
+  const routes = {
+    'test': { Page: PageTest, path: '/test' },
+  };
+
+  setLocation("/test");
+
+  act(() => {
+    render(<Navigator routes = {routes} propToBePropagated = 'testpass' />, container);
+  });
+
+  expect(PageTest.mock.calls[0][0]).toHaveProperty('propToBePropagated', 'testpass');
 
 });
