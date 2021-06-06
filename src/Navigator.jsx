@@ -22,27 +22,20 @@ export default function Navigator(props) {
 
   useEffect(() => registerNavigator({ navigate }), []);
 
+  const route = routeStack[0];
+
+  if (!route.Page)
+    return null;
+
+  const exportedRoute = exportRouteForPage(route);
+  exportedRoute.isActive = true;
+
   return (
     <div data-testid = "navigator">
-      {
-        routeStack.map((route, index) => {
-          const display = index === 0 ? 'block' : 'none';
-
-          if (!route.Page)
-            return null;
-
-          const exportedRoute = exportRouteForPage(route);
-          exportedRoute.isActive = index === 0;
-
-          return (
-            <div key = { `${route.name}.${route.path}` } style = {{ display }}>
-              { React.createElement(route.Page, { ...props, route: exportedRoute }) }
-            </div>
-          );
-        })
-      }
+      { React.createElement(route.Page, { ...props, route: exportedRoute }) }
     </div>
   );
+
 
   function createInitialRouteStack() {
     if ( env.isWeb() && !Object.keys(routes).every(name => routes[name].path || routes[name].redirect) )
