@@ -26,8 +26,8 @@ module.exports = {
       contentBase: path.join(__dirname, 'demo'),
       publicPath: "/assets/",
       historyApiFallback: true,
-      watchOptions: {
-        poll: true,
-      },
+      // watchOptions: {
+      //   poll: true,
+      // },
     }
 }
