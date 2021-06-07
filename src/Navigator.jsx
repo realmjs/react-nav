@@ -12,6 +12,9 @@ import EventEmitter from './event-emitter';
 import popupManager from './popup-manager';
 import Modal from './Modal';
 
+import BodyScrollLocker from './body-scroll-locker';
+const bodyScroll = BodyScrollLocker();
+
 export default function Navigator(props) {
 
   const { routes, initialRoute, fallback } = props;
@@ -142,8 +145,15 @@ export default function Navigator(props) {
   }
 
   function handlerPopupRequest({ action }) {
-    if (/^open$|^resolve$|^reject$/.test(action))
-      setPopupCount(popupManager.getActivePopups().length);
+    if (!/^open$|^resolve$|^reject$/.test(action))
+      return;
+
+    if (action === 'open')
+      bodyScroll.disable();
+    else
+      bodyScroll.enable();
+
+    setPopupCount(popupManager.getActivePopups().length);
   }
 
 }
