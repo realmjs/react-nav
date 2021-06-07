@@ -5,3 +5,4 @@ export { default as nav } from './nav';
 export { default as useRouteData } from './route-data.hook';
 export { default as useRouteError } from './route-error.hook';
 export { default as useDocumentTitle } from './document-title.hook';
+export { default as usePopup } from './popup.hook';

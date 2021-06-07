@@ -9,6 +9,9 @@ import { registerNavigator } from './nav';
 import { useComponentWillMount } from './lifecycle.hook';
 import EventEmitter from './event-emitter';
 
+import popupManager from './popup-manager';
+import Modal from './Modal';
+
 export default function Navigator(props) {
 
   const { routes, initialRoute, fallback } = props;
@@ -22,6 +25,14 @@ export default function Navigator(props) {
 
   useEffect(() => registerNavigator({ navigate }), []);
 
+  useEffect(() => {
+    popupManager.on('request', handlerPopupRequest);
+    return () => popupManager.off('request', handlerPopupRequest);
+  },[]);
+
+  const [popupCount, setPopupCount] = useState(0);
+  const popups = popupManager.getActivePopups();
+
   const route = routeStack[0];
 
   if (!route.Page)
@@ -33,6 +44,13 @@ export default function Navigator(props) {
   return (
     <div data-testid = "navigator">
       { React.createElement(route.Page, { ...props, route: exportedRoute }) }
+      <Modal visible = {popupCount > 0} >
+        <div style = {{ position: 'relative' }}>
+        {
+          popups.map((popup, index) => React.createElement(popup.Popup, { ...popup.props, self: popup, key: index }))
+        }
+        </div>
+      </Modal>
     </div>
   );
 
@@ -121,6 +139,11 @@ export default function Navigator(props) {
       routeStack.unshift(routeStack.splice(index, 1)[0]);
       return [...routeStack];
     }
+  }
+
+  function handlerPopupRequest({ action }) {
+    if (/^open$|^resolve$|^reject$/.test(action))
+      setPopupCount(popupManager.getActivePopups().length);
   }
 
 }
