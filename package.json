@@ -1,6 +1,6 @@
 {
   "name": "@realmjs/react-navi",
-  "version": "4.3.1",
+  "version": "4.3.2",
   "description": "Navigator for react client",
   "main": "dist/index.js",
   "scripts": {

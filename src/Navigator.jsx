@@ -48,11 +48,9 @@ export default function Navigator(props) {
     <div data-testid = "navigator">
       { React.createElement(route.Page, { ...props, route: exportedRoute }) }
       <Modal visible = {popupCount > 0} >
-        <div style = {{ position: 'relative' }}>
         {
           popups.map((popup, index) => React.createElement(popup.Popup, { ...popup.props, self: popup, key: index }))
         }
-        </div>
       </Modal>
     </div>
   );
