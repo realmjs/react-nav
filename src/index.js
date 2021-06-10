@@ -2,7 +2,7 @@
 
 export { default as Navigator } from './Navigator';
 export { default as nav } from './nav';
-export { default as useRouteData } from './route-data.hook';
-export { default as useRouteError } from './route-error.hook';
-export { default as useDocumentTitle } from './document-title.hook';
-export { default as usePopup } from './popup.hook';
+export { default as useRouteData } from './useRouteData.hook';
+export { default as useRouteError } from './useRouteError.hook';
+export { default as useDocumentTitle } from './useDocumentTitle.hook';
+export { default as usePopup } from './usePopup.hook';
