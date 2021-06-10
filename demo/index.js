@@ -12,13 +12,18 @@ import Blog from './Page/Blog';
 
 const routes = {
   "home": { path: "/", Page: Home },
-  "about": { path: "/about/:team", Page: About, data: (params) => /^t|^d/.test(params.team)? Promise.resolve(params.team.toUpperCase()) : Promise.reject('404') },
+  "about": {
+    path: "/about/:team",
+    Page: About,
+    title: 'About: {:team} / {{data}}',
+    data: (params) => /^t|^d/.test(params.team)? Promise.resolve(params.team.toUpperCase()) : Promise.reject('404'),
+  },
   "404": { path: "/404", Page: E404 },
   'landing': { redirect: 'home', path: '/landing'},
   'blog': {
     path: "/blog/:id",
     Page: Blog,
-    title: 'Blog {:id} by {{author}}/{{section.latest}}',
+    title: 'Blog {:id} by {{data.author}}/{{data.section.latest}}',
     data: (params, props, event) => {
       const fetchingData = { author: 'me', section: { latest: 'yesterday' }};
       const fetchedData = { author: 'me', section: { latest: 'today' }};

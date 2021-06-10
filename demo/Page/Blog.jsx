@@ -8,8 +8,8 @@ import { usePopup } from '../../src'
 
 export default function({ route }) {
 
-  useDocumentTitle(route);
   const data = useRouteData(route);
+  useDocumentTitle(route, data);
   const popup = usePopup(Popup);
 
   return (

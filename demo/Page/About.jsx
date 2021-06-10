@@ -2,11 +2,12 @@
 
 import React from 'react';
 
-import { useRouteData, useRouteError } from '../../src';
+import { useRouteData, useRouteError, useDocumentTitle } from '../../src';
 
 export default function({ route }) {
 
   const data = useRouteData(route);
+  useDocumentTitle(route, data);
   const error = useRouteError(route);
 
   const err = error && error.scope == 'data'? error.error : null;

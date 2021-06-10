@@ -1,18 +1,8 @@
 "use strict"
 
-import useRouteData from './route-data.hook';
-import { isNotFunction } from './util';
-
-export default function (route) {
+export default function (route, data) {
   if (document && route.isActive && route.title) {
-    if (isNotFunction(route.data)) {
-      document.title = composeDocTitle(route.title, route.params, route.data);
-    } else {
-      const data = useRouteData(route);
-      if (data) {
-        document.title = composeDocTitle(route.title, route.params, data);
-      }
-    }
+    document.title = composeDocTitle(route.title, route.params, data);
   }
 }
 
@@ -40,7 +30,7 @@ function matchData(title) {
 
 function deepGetData(data, pattern) {
   const keys = pattern.split('.');
-  const value = data[keys[0]];
+  const value = data[keys[0]] || data;
   if (keys.length === 1) { return value; }
   return deepGetData(value, pattern.replace(/^\w*\./,''));
 }
