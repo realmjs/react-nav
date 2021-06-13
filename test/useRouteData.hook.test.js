@@ -6,7 +6,7 @@ import "regenerator-runtime/runtime";
 import { act } from "react-dom/test-utils";
 
 import { renderHook } from '@testing-library/react-hooks';
-import useRouteData from '../src/route-data.hook';
+import { useRouteData } from '../src';
 import EventEmitter from '../src/event-emitter';
 
 jest.mock('../src/event-emitter');

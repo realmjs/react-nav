@@ -5,7 +5,7 @@ import "regenerator-runtime/runtime";
 
 import { renderHook } from '@testing-library/react-hooks';
 import { act } from "react-dom/test-utils";
-import useRouteError from '../src/route-error.hook';
+import { useRouteError } from '../src';
 
 let __handler;
 const event = {

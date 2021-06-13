@@ -18,6 +18,7 @@ export default function({ visible, children }) {
     background: 'rgba(0, 0, 0, .2)',
     display: visible? 'block' : 'none',
     overflowY: 'scroll',
+    zIndex: 9999,
   };
 
   return (
