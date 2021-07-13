@@ -508,3 +508,22 @@ test("Navigator with noURL, there is should no duplicated route in routeStack", 
   ]);
 
 });
+
+
+test("Navigator with noURL, initialRoute must be used when route contain same path", () => {
+  const routes = {
+    "home": { path: '/:t', Page: jest.fn(() => null) },
+    "begin": { path: '/:t', Page: jest.fn(() => null) },
+  };
+
+  setLocation("/test");
+
+  act(() => {
+    render(<Navigator routes = {routes} initialRoute = 'begin' routeStackName = '__routestack_' noURL />, container);
+  });
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'begin', path: '/test', params: {t: 'test'}},
+  ]);
+
+});

@@ -66,10 +66,7 @@ export default function Navigator(props) {
 
 
   function createInitialRouteStack() {
-    let name = env.isWeb()?
-                  Object.keys(routes).find(name => routes[name].path && routeUtil.match(routes[name].path).isMatched) || initialRoute || fallback
-                :
-                  initialRoute || fallback;
+    let name = getInitialRouteName();
 
     if (routes[name].redirect) {
       name = routes[name].redirect;
@@ -92,6 +89,14 @@ export default function Navigator(props) {
     }
 
     return routeStack;
+  }
+
+  function getInitialRouteName() {
+    if (env.isNative() || noURL) {
+      return initialRoute || fallback;
+    } else {
+      return Object.keys(routes).find(name => routes[name].path && routeUtil.match(routes[name].path).isMatched) || fallback;
+    }
   }
 
   function setInitialLocation() {
