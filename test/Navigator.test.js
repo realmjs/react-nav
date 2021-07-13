@@ -481,3 +481,30 @@ test("Navigator with noURL, initialRoute must be used", () => {
   ]);
 
 });
+
+
+test("Navigator with noURL, there is should no duplicated route in routeStack", () => {
+  const routes = {
+    "begin": { Page: jest.fn(() => null) },
+  };
+
+  sessionStorage.setItem('__routestack_', JSON.stringify([
+    { name: 'begin', params: {} }
+  ]));
+
+
+  act(() => {
+    render(<Navigator routes = {routes} initialRoute = 'begin' routeStackName = '__routestack_' noURL />, container);
+  });
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'begin', params: {}},
+  ]);
+
+  act(() => nav.navigate('begin', {}));
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'begin', params: {} },
+  ]);
+
+});

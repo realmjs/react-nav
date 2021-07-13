@@ -80,7 +80,7 @@ export default function Navigator(props) {
 
     const routeStack = importRouteStack(storage.get());
 
-    const index = routeStack.findIndex(route => route.name === name && route.path === routeUtil.path());
+    const index = routeStack.findIndex(route => (route.name === name) && (route.path !== undefined? route.path === routeUtil.path() : true));
 
     if (index === -1) {
       const route = { ...routes[name] };
