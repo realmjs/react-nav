@@ -72,6 +72,22 @@ test("Navigator alert an error if initialRoute does not in the routes", () => {
 });
 
 
+test("Navigator alert an error if missing initialRoute when noURL is set", () => {
+
+  const spy = jest.spyOn(console, 'error').mockImplementation();
+
+  act(() => {
+    render(<Navigator routes = {routes} noURL fallback = '404' />, container);
+  });
+
+  expect(spy).toHaveBeenCalled();
+  expect(spy.mock.calls[0][2]).toEqual("initialRoute must be defined when noURL = true");
+
+  spy.mockRestore();
+
+});
+
+
 test("Navigator alert an error if fallback is not defined in the routes", () => {
 
   const spy = jest.spyOn(console, 'error').mockImplementation();
@@ -112,7 +128,7 @@ test("Navigator render fallback if initialRoute and window.location are both und
   });
 
   expect(container.textContent).toBe("404");
-  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: '404' }]);
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: '404', params: {} }]);
 
   clearMockLocation();
 
@@ -128,7 +144,7 @@ test("Navigator render the initial route when window.location is undefined", () 
   });
 
   expect(container.textContent).toBe("About");
-  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: 'about' }]);
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: 'about', params: {} }]);
 
   clearMockLocation();
 
@@ -439,5 +455,32 @@ test("Navigator propagate its props to Page", () => {
   });
 
   expect(PageTest.mock.calls[0][0]).toHaveProperty('propToBePropagated', 'testpass');
+
+});
+
+
+test("Navigator with noURL, initialRoute must be used", () => {
+  const routes = {
+    "home": { Page: jest.fn(() => null) },
+    "begin": { Page: jest.fn(() => null) },
+    "end": { Page: jest.fn(() => null) },
+  };
+
+  setLocation("/notexist");
+
+  act(() => {
+    render(<Navigator routes = {routes} initialRoute = 'begin' routeStackName = '__routestack_' noURL />, container);
+  });
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'begin', params: {}},
+  ]);
+
+  act(() => nav.navigate('end', {}));
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'end', params: {} },
+    { name: 'begin', params: {} },
+  ]);
 
 });

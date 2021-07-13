@@ -17,7 +17,7 @@ const bodyScroll = BodyScrollLocker();
 
 export default function Navigator(props) {
 
-  const { routes, initialRoute, fallback } = props;
+  const { routes, initialRoute, fallback, noURL } = props;
 
   const [routeStack, setRouteStack] = useState(() => createInitialRouteStack());
 
@@ -66,11 +66,8 @@ export default function Navigator(props) {
 
 
   function createInitialRouteStack() {
-    if ( env.isWeb() && !Object.keys(routes).every(name => routes[name].path || routes[name].redirect) )
-      return [];
-
     let name = env.isWeb()?
-                  Object.keys(routes).find(name => routes[name].path && routeUtil.match(routes[name].path).isMatched) || fallback
+                  Object.keys(routes).find(name => routes[name].path && routeUtil.match(routes[name].path).isMatched) || initialRoute || fallback
                 :
                   initialRoute || fallback;
 
@@ -87,8 +84,8 @@ export default function Navigator(props) {
 
     if (index === -1) {
       const route = { ...routes[name] };
-      route.params = env.isWeb()? routeUtil.match(routes[name].path).params : undefined;
-      route.path = env.isWeb()? routeUtil.constructLocationPath(route.path, route.params) : undefined;
+      route.params = env.isWeb() && route.path? routeUtil.match(routes[name].path).params : {};
+      route.path = env.isWeb() && route.path? routeUtil.constructLocationPath(route.path, route.params) : undefined;
       routeStack.unshift({ name, ...route });
     } else {
       routeStack.unshift(routeStack.splice(index, 1)[0]);
@@ -132,7 +129,7 @@ export default function Navigator(props) {
     const route = { ...routes[name] };
     route.params = params || {};
     try {
-      route.path = env.isWeb()? routeUtil.constructLocationPath(route.path, route.params) : undefined;
+      route.path = env.isWeb() && route.path? routeUtil.constructLocationPath(route.path, route.params) : undefined;
     } catch(err) {
       console.error("[Error: route params do not match the param's pattern]");
       return false;
@@ -173,8 +170,9 @@ function validateRoutes(props) {
   const { routes }= props;
   if ( !routes ) return new Error("Invalid routes definition");
   if ( !Object.keys(routes).every(name => routes[name].Page || routes[name].redirect) ) return new Error("Invalid routes definition");
-  if ( env.isWeb() && !Object.keys(routes).every(name => routes[name].path || routes[name].redirect) ) return new Error("Invalid routes definition");
+  if ( !props.noURL && env.isWeb() && !Object.keys(routes).every(name => routes[name].path || routes[name].redirect) ) return new Error("Invalid routes definition");
   if ( props.initialRoute && Object.keys(routes).indexOf(props.initialRoute) === -1 ) return new Error("initialRoute is not defined in routes object");
   if ( props.fallback && Object.keys(routes).indexOf(props.fallback) === -1 ) return new Error("fallback is not defined in routes object");
+  if ( props.noURL && !props.initialRoute ) return new Error("initialRoute must be defined when noURL = true");
   return null;
 }
