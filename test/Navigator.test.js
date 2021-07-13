@@ -18,6 +18,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  clearMockLocation();
   unmountComponentAtNode(container);
   container.remove();
   container = null;
@@ -130,8 +131,6 @@ test("Navigator render fallback if initialRoute and window.location are both und
   expect(container.textContent).toBe("404");
   expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: '404', params: {} }]);
 
-  clearMockLocation();
-
 });
 
 
@@ -145,8 +144,6 @@ test("Navigator render the initial route when window.location is undefined", () 
 
   expect(container.textContent).toBe("About");
   expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([{ name: 'about', params: {} }]);
-
-  clearMockLocation();
 
 });
 
