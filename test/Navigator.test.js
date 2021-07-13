@@ -527,3 +527,28 @@ test("Navigator with noURL, initialRoute must be used when route contain same pa
   ]);
 
 });
+
+test.only("Navigator with noURL, initialRoute must be used when route contain same path and routeStack store different path", () => {
+  const routes = {
+    "home": { path: '/:t', Page: jest.fn(() => null) },
+    "begin": { path: '/:t', Page: jest.fn(() => null) },
+    "end": { path: '/:t', Page: jest.fn(() => null) },
+  };
+
+  sessionStorage.setItem('__routestack_', JSON.stringify([
+    { name: 'end', path: '/test', params: {t: 'test'}},
+    { name: 'begin', path: '/test', params: {t: 'test'}},
+  ]));
+
+  setLocation("/test");
+
+  act(() => {
+    render(<Navigator routes = {routes} initialRoute = 'begin' routeStackName = '__routestack_' noURL />, container);
+  });
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'begin', path: '/test', params: {t: 'test'}},
+    { name: 'end', path: '/test', params: {t: 'test'}},
+  ]);
+
+});
