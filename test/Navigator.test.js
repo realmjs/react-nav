@@ -611,3 +611,26 @@ test("Navigator with noURL, should render page of initialRoute according to url"
   ]);
 
 });
+
+
+
+test("Navigator with noURL, should render page of initialRoute according to url, path include param", () => {
+  const routes = {
+    "haiphong": { path: '/north/:city', Page: jest.fn(() => null) },
+    "hanoi": { path: '/north/:city', Page: jest.fn(() => null) },
+    "bienhoa": { path: '/south/:city', Page: jest.fn(() => null) },
+    "saigon": { path: '/south/:city', Page: jest.fn(() => null) },
+    "404": { path: '/404', Page: jest.fn(() => null) },
+  };
+
+  setLocation("/north/saigon");
+
+  act(() => {
+    render(<Navigator routes = {routes} initialRoute = {{ '/south': 'saigon', '/north': 'hanoi' }} fallback = '404' routeStackName = '__routestack_' noURL />, container);
+  });
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'hanoi', path: '/north/saigon', params: { city: 'saigon'}},
+  ]);
+
+});
