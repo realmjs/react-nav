@@ -23,6 +23,7 @@ afterEach(() => {
   container.remove();
   container = null;
   sessionStorage.clear();
+  jest.restoreAllMocks();
 });
 
 import { Navigator, nav, useDocumentTitle } from '../src';
@@ -84,8 +85,6 @@ test("Navigator alert an error if missing initialRoute when noURL is set", () =>
   expect(spy).toHaveBeenCalled();
   expect(spy.mock.calls[0][2]).toEqual("initialRoute must be defined when noURL = true");
 
-  spy.mockRestore();
-
 });
 
 
@@ -99,8 +98,6 @@ test("Navigator alert an error if fallback is not defined in the routes", () => 
 
   expect(spy).toHaveBeenCalled();
   expect(spy.mock.calls[0][2]).toEqual("fallback is not defined in routes object");
-
-  spy.mockRestore();
 
 });
 
@@ -139,7 +136,7 @@ test("Navigator render the initial route when window.location is undefined", () 
   mockLocation(undefined);
 
   act(() => {
-    render(<Navigator routes = {routes} initialRoute = 'about' routeStackName = '__routestack_' />, container);
+    render(<Navigator routes = {routes} initialRoute = 'about' routeStackName = '__routestack_'  />, container);
   });
 
   expect(container.textContent).toBe("About");
@@ -350,13 +347,14 @@ test("Navigator passing enough properties to route object", () => {
   const PageDev = jest.fn(() => null);
   const routes = {
     'test': { Page: PageTest, path: '/test' },
-    'dev': { Page: PageDev, path: '/dev' }
+    'dev': { Page: PageDev, path: '/dev' },
+    '404': { Page: jest.fn(() => null), path: '/404' },
   };
 
   setLocation("/test");
 
   act(() => {
-    render(<Navigator routes = {routes} />, container);
+    render(<Navigator routes = {routes} fallback = '404' />, container);
   });
 
   expect(PageTest).toHaveBeenCalled();
@@ -379,12 +377,13 @@ test("Navigator use hook to set document title", () => {
   const routes = {
     test: { Page, path: '/test/:team', title: 'Test Team' },
     dept: { Page, path: '/department/:dept', title: 'Department' },
+    '404': { Page: jest.fn(() => null), path: '/404' },
   };
 
   setLocation("/test/alpha");
 
   act(() => {
-    render(<Navigator routes = {routes} />, container);
+    render(<Navigator routes = {routes} fallback = '404' />, container);
   });
 
   expect(document.title).toBe('Test Team');
@@ -448,7 +447,7 @@ test("Navigator propagate its props to Page", () => {
   setLocation("/test");
 
   act(() => {
-    render(<Navigator routes = {routes} propToBePropagated = 'testpass' />, container);
+    render(<Navigator routes = {routes} propToBePropagated = 'testpass' fallback = '404' />, container);
   });
 
   expect(PageTest.mock.calls[0][0]).toHaveProperty('propToBePropagated', 'testpass');
@@ -514,12 +513,13 @@ test("Navigator with noURL, initialRoute must be used when route contain same pa
   const routes = {
     "home": { path: '/:t', Page: jest.fn(() => null) },
     "begin": { path: '/:t', Page: jest.fn(() => null) },
+    "404": { path: '/404', Page: jest.fn(() => null) },
   };
 
   setLocation("/test");
 
   act(() => {
-    render(<Navigator routes = {routes} initialRoute = 'begin' routeStackName = '__routestack_' noURL />, container);
+    render(<Navigator routes = {routes} initialRoute = 'begin' routeStackName = '__routestack_' fallback = '404' noURL />, container);
   });
 
   expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
@@ -528,11 +528,12 @@ test("Navigator with noURL, initialRoute must be used when route contain same pa
 
 });
 
-test.only("Navigator with noURL, initialRoute must be used when route contain same path and routeStack store different path", () => {
+test("Navigator with noURL, initialRoute must be used when route contain same path and routeStack store different path", () => {
   const routes = {
     "home": { path: '/:t', Page: jest.fn(() => null) },
     "begin": { path: '/:t', Page: jest.fn(() => null) },
     "end": { path: '/:t', Page: jest.fn(() => null) },
+    "404": { path: '/404', Page: jest.fn(() => null) },
   };
 
   sessionStorage.setItem('__routestack_', JSON.stringify([
@@ -543,12 +544,32 @@ test.only("Navigator with noURL, initialRoute must be used when route contain sa
   setLocation("/test");
 
   act(() => {
-    render(<Navigator routes = {routes} initialRoute = 'begin' routeStackName = '__routestack_' noURL />, container);
+    render(<Navigator routes = {routes} initialRoute = 'begin' routeStackName = '__routestack_' fallback = '404' noURL />, container);
   });
 
   expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
     { name: 'begin', path: '/test', params: {t: 'test'}},
     { name: 'end', path: '/test', params: {t: 'test'}},
+  ]);
+
+});
+
+
+test("Navigator with noURL, should render fallback if no route matches", () => {
+  const routes = {
+    "home": { path: '/test/:t', Page: jest.fn(() => null) },
+    "begin": { path: '/test/:t', Page: jest.fn(() => null) },
+    "404": { path: '/404', Page: jest.fn(() => null) },
+  };
+
+  setLocation("/t01");
+
+  act(() => {
+    render(<Navigator routes = {routes} initialRoute = 'begin' fallback = '404' routeStackName = '__routestack_' noURL />, container);
+  });
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: '404', path: '/404', params: {}},
   ]);
 
 });

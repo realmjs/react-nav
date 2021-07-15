@@ -92,10 +92,22 @@ export default function Navigator(props) {
   }
 
   function getInitialRouteName() {
-    if (env.isNative() || noURL) {
+    if (env.isNative()) {
       return initialRoute || fallback;
+    } else if(noURL) {
+      return isMatchedInitialRoute()? initialRoute : fallback;
     } else {
       return Object.keys(routes).find(name => routes[name].path && routeUtil.match(routes[name].path).isMatched) || fallback;
+    }
+  }
+
+  function isMatchedInitialRoute() {
+    if (env.isNative()) return true;
+    if (!initialRoute || !routes[initialRoute]) return false;
+    if (routes[initialRoute].path) {
+      return routeUtil.match(routes[initialRoute].path).isMatched? true : false;
+    } else {
+      return true;
     }
   }
 
@@ -179,5 +191,6 @@ function validateRoutes(props) {
   if ( props.initialRoute && Object.keys(routes).indexOf(props.initialRoute) === -1 ) return new Error("initialRoute is not defined in routes object");
   if ( props.fallback && Object.keys(routes).indexOf(props.fallback) === -1 ) return new Error("fallback is not defined in routes object");
   if ( props.noURL && !props.initialRoute ) return new Error("initialRoute must be defined when noURL = true");
+  if ( env.isWeb() && Object.keys(routes).some(name => routes[name].path) && !props.fallback) return new Error("Must define fallback when using route with path");
   return null;
 }
