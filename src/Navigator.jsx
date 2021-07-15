@@ -95,19 +95,29 @@ export default function Navigator(props) {
     if (env.isNative()) {
       return initialRoute || fallback;
     } else if(noURL) {
-      return isMatchedInitialRoute()? initialRoute : fallback;
+      return matchNameFromInitialRoute() || fallback;
     } else {
       return Object.keys(routes).find(name => routes[name].path && routeUtil.match(routes[name].path).isMatched) || fallback;
     }
   }
 
-  function isMatchedInitialRoute() {
-    if (env.isNative()) return true;
-    if (!initialRoute || !routes[initialRoute]) return false;
-    if (routes[initialRoute].path) {
-      return routeUtil.match(routes[initialRoute].path).isMatched? true : false;
+  function matchNameFromInitialRoute() {
+    if (!initialRoute) return undefined;
+    if (typeof initialRoute === 'string') {
+      if (!routes[initialRoute]) return undefined;
+      if (routes[initialRoute].path) {
+        return routeUtil.match(routes[initialRoute].path).isMatched? initialRoute : undefined;
+      } else {
+        return initialRoute;
+      }
     } else {
-      return true;
+      for (let path in initialRoute) {
+        const routeName = initialRoute[path];
+        if (routeUtil.match(routes[routeName].path).isMatched) {
+          return routeName;
+        }
+      }
+      return undefined;
     }
   }
 
@@ -188,7 +198,7 @@ function validateRoutes(props) {
   if ( !routes ) return new Error("Invalid routes definition");
   if ( !Object.keys(routes).every(name => routes[name].Page || routes[name].redirect) ) return new Error("Invalid routes definition");
   if ( !props.noURL && env.isWeb() && !Object.keys(routes).every(name => routes[name].path || routes[name].redirect) ) return new Error("Invalid routes definition");
-  if ( props.initialRoute && Object.keys(routes).indexOf(props.initialRoute) === -1 ) return new Error("initialRoute is not defined in routes object");
+  if ( props.initialRoute && typeof props.initialRoute === 'string' && Object.keys(routes).indexOf(props.initialRoute) === -1 ) return new Error("initialRoute is not defined in routes object");
   if ( props.fallback && Object.keys(routes).indexOf(props.fallback) === -1 ) return new Error("fallback is not defined in routes object");
   if ( props.noURL && !props.initialRoute ) return new Error("initialRoute must be defined when noURL = true");
   if ( env.isWeb() && Object.keys(routes).some(name => routes[name].path) && !props.fallback) return new Error("Must define fallback when using route with path");

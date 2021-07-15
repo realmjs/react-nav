@@ -573,3 +573,41 @@ test("Navigator with noURL, should render fallback if no route matches", () => {
   ]);
 
 });
+
+
+test("Navigator with noURL, should render page of initialRoute according to url", () => {
+  const routes = {
+    "haiphong": { path: '/north', Page: jest.fn(() => null) },
+    "hanoi": { path: '/north', Page: jest.fn(() => null) },
+    "bienhoa": { path: '/south', Page: jest.fn(() => null) },
+    "saigon": { path: '/south', Page: jest.fn(() => null) },
+    "404": { path: '/404', Page: jest.fn(() => null) },
+  };
+
+  setLocation("/south");
+
+  act(() => {
+    render(<Navigator routes = {routes} initialRoute = {{ '/south': 'saigon', '/north': 'hanoi' }} fallback = '404' routeStackName = '__routestack_' noURL />, container);
+  });
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'saigon', path: '/south', params: {}},
+  ]);
+
+  unmountComponentAtNode(container);
+  container.remove();
+  container = document.createElement("div");
+  document.body.appendChild(container);
+
+  setLocation("/north");
+
+  act(() => {
+    render(<Navigator routes = {routes} initialRoute = {{ '/south': 'saigon', '/north': 'hanoi' }} fallback = '404' routeStackName = '__routestack_' noURL />, container);
+  });
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'hanoi', path: '/north', params: {}},
+    { name: 'saigon', path: '/south', params: {}},
+  ]);
+
+});
