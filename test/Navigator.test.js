@@ -613,7 +613,6 @@ test("Navigator with noURL, should render page of initialRoute according to url"
 });
 
 
-
 test("Navigator with noURL, should render page of initialRoute according to url, path include param", () => {
   const routes = {
     "haiphong": { path: '/north/:city', Page: jest.fn(() => null) },
@@ -631,6 +630,29 @@ test("Navigator with noURL, should render page of initialRoute according to url,
 
   expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
     { name: 'hanoi', path: '/north/saigon', params: { city: 'saigon'}},
+  ]);
+
+});
+
+
+test("Navigator resolve the issue if address url containt suffix / charactor", () => {
+  const routes = {
+    "test": { path: '/test', Page: jest.fn(() => null) },
+    "404": { path: '/404', Page: jest.fn(() => null) },
+  };
+
+  sessionStorage.setItem('__routestack_', JSON.stringify([
+    { name: 'test', path: '/test', params: {} }
+  ]));
+
+  setLocation("/test/");
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' />, container);
+  });
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'test', path: '/test', params: {} }
   ]);
 
 });

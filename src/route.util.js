@@ -20,7 +20,7 @@ function href() {
 href.set = (url) => location.href = url;
 
 function path() {
-  return location.pathname;
+  return location.pathname === '/' ? '/' : location.pathname.replace(/\/$/,'');
 }
 path.replace = (path) => history.replaceState({}, "", path);
 path.push = (path) => history.pushState({}, "", path);
