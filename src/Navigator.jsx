@@ -33,8 +33,7 @@ export default function Navigator(props) {
     return () => popupManager.off('request', handlerPopupRequest);
   },[]);
 
-  const [popupCount, setPopupCount] = useState(0);
-  const popups = popupManager.getActivePopups();
+  const [popups, setPopups] = useState([]);
 
   return (
     <div data-testid = "navigator">
@@ -56,7 +55,7 @@ export default function Navigator(props) {
         })
       }
 
-      <Modal visible = {popupCount > 0} >
+      <Modal visible = {popups.length > 0} >
         {
           popups.map((popup, index) => React.createElement(popup.Popup, { ...popup.props, self: popup, key: index }))
         }
@@ -184,7 +183,7 @@ export default function Navigator(props) {
     else
       bodyScroll.enable();
 
-    setPopupCount(popupManager.getActivePopups().length);
+    setPopups([...popupManager.getActivePopups()]);
   }
 
 }
