@@ -40,7 +40,8 @@ class PopupHandler {
     this._handlers = { 'resolve': [], 'reject': [] };
   }
 
-  open(props) {
+  open(data, props) {
+    this.data = data;
     this.props = props;
     this.isActive = true;
     events.emit('request', { action: 'open' });

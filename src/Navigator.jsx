@@ -57,7 +57,17 @@ export default function Navigator(props) {
 
       <Modal visible = {popups.length > 0} >
         {
-          popups.map((popup, index) => React.createElement(popup.Popup, { ...popup.props, self: popup, key: index }))
+          popups.map((popup, index) => {
+            if (popup.props && popup.props.overlay) {
+              return (
+                <Modal visible = {true} key = {index}>
+                  { React.createElement(popup.Popup, { ...popup.data, self: popup }) }
+                </Modal>
+              )
+            } else {
+              return React.createElement(popup.Popup, { ...popup.data, self: popup, key: index });
+            }
+          })
         }
       </Modal>
     </div>
