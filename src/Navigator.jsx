@@ -26,7 +26,7 @@ export default function Navigator(props) {
   useEffect(() => storage.set(exportRouteStack()), [routeStack]);
   useEffect(() => props.onRouteStackChange && props.onRouteStackChange(exportRouteStack()), [routeStack]);
 
-  useEffect(() => registerNavigator({ navigate }), []);
+  useEffect(() => registerNavigator({ navigate, back }), []);
 
   useEffect(() => {
     popupManager.on('request', handlerPopupRequest);
@@ -181,6 +181,16 @@ export default function Navigator(props) {
     } else {
       routeStack.unshift(routeStack.splice(index, 1)[0]);
       return [...routeStack];
+    }
+  }
+
+  function back() {
+    const routeStack = importRouteStack(storage.get());
+    if (routeStack.length > 1) {
+      routeStack.shift();
+      const route = routeStack[0];
+      env.isWeb() && routeUtil.path.replace(route.path);
+      setRouteStack(routeStack);
     }
   }
 

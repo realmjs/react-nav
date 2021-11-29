@@ -116,3 +116,52 @@ test("Alert error when navigating with invalid route params", () => {
   spy.mockRestore();
 
 });
+
+test("Navigate back take no effect if there is no previous route", () => {
+
+  setLocation("/about");
+
+  sessionStorage.setItem(
+    '__routestack_',
+    JSON.stringify([
+      { name: 'about', path: routes['about'].path, params: {} }
+    ]));
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' />, container);
+  });
+
+  act(() => nav.back());
+
+  expect(location.pathname).toBe("/about");
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'about', path: routes['about'].path, params: {} }
+  ]);
+
+});
+
+test("Navigate back should remove current route from routeStack and set location to previus route", () => {
+
+  setLocation("/about");
+
+  sessionStorage.setItem(
+    '__routestack_',
+    JSON.stringify([
+      { name: 'about', path: routes['about'].path, params: {} },
+      { name: 'home', path: routes['home'].path, params: {} },
+    ]));
+
+  act(() => {
+    render(<Navigator routes = {routes} fallback = '404' routeStackName = '__routestack_' />, container);
+  });
+
+  act(() => nav.back());
+
+  expect(location.pathname).toBe("/");
+
+  expect(JSON.parse(sessionStorage.getItem('__routestack_'))).toEqual([
+    { name: 'home', path: routes['home'].path, params: {} }
+  ]);
+
+});
