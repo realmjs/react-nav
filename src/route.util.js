@@ -61,7 +61,7 @@ function constructLocationPath(path, params) {
   for (let i = 0; i < parts.length; i++) {
     if (/^:/.test(parts[i])) {
       const p = parts[i].split(':').pop();
-      if (params && (params[p] !== undefined || params[p] !== null)) {
+      if (params && params[p] !== undefined && params[p] !== null) {
         locationPath += `/${params[p]}`;
       } else {
         throw new Error(`route params do not match the param's pattern`);
