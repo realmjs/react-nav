@@ -24,7 +24,7 @@ export default function Navigator(props) {
   useComponentWillMount(setInitialLocation);
 
   useEffect(() => storage.set(exportRouteStack()), [routeStack]);
-  useEffect(() => props.onRouteStackChange && props.onRouteStackChange(exportRouteStack()), [routeStack]);
+  useEffect(() => { props.onRouteStackChange && props.onRouteStackChange(exportRouteStack()) }, [routeStack]);
 
   useEffect(() => registerNavigator({ navigate, back }), []);
 

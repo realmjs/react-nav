@@ -5,7 +5,7 @@ import React, { useState, useRef, useEffect } from 'react';
 export default function({ visible, children }) {
 
   const modal = useRef();
-  useEffect(() => visible && scrollModalTop(), [visible]);
+  useEffect(() => { visible && scrollModalTop() }, [visible]);
 
   /* to remove flicker when scrollTop, visible content after the modal has already rendered and scrolled top */
   const [visibleContent, setVisibleContent] = useState(false);
